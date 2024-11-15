@@ -8,7 +8,7 @@ export default function Library() {
     //only update if the value changes
     useEffect(() => {
         const fetchData = async () => {
-            const response = await fetch("http://127.0.0.1:8080/api/books")
+            const response = await fetch("/api/books")
             const json = await response.json()
             setBooks(json)
         }
