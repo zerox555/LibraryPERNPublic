@@ -21,7 +21,7 @@ app.use('*', (req,res) =>{
 });
 
 //LISTEN    
-app.listen(8080, "127.0.0.1", () =>{
+app.listen(8080, () =>{
    
     console.log("Server running on port 8080")
 });
