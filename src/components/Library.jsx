@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import "../App.css";
 
-
 export default function Library() {
     //declare list of stateful list 'books' and function 'setBooks' to update
     const [books, setBooks] = useState([])
 
     //get url for current env
-    const url = process.env.REACT_APP_WEB_DEVELOPMENT == "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
+    const url = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
 
     //define css
     const mystyle = {
@@ -21,6 +20,7 @@ export default function Library() {
             //TODO:Change back when deploying 
             
             const response = await fetch(url)
+            console.log(process.env.REACT_APP_WEB_DEPLOYMENT);
             const json = await response.json()
             setBooks(json)
         }
