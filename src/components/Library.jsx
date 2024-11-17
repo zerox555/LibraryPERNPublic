@@ -7,7 +7,7 @@ export default function Library() {
     const [books, setBooks] = useState([])
 
     //get url for current env
-    const url = process.env.REACT_APP_WEB_DEVELOPMENT == "TRUE" ? "/api/books" : "http://localhost:8080/api/books"
+    const url = process.env.REACT_APP_WEB_DEVELOPMENT == "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
 
     //define css
     const mystyle = {
