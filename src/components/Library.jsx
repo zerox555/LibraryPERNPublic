@@ -6,7 +6,9 @@ export default function Library() {
     const [books, setBooks] = useState([])
 
     //get url for current env
-    const url = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
+    const urlGetAllBooks = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
+    const urlDeleteBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/deletebook/" : "http://localhost:8080/api/deletebook/"
+    const urlCreateBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/createbook/" : "http://localhost:8080/api/createbook/"
 
     //define css
     const mystyle = {
@@ -16,10 +18,8 @@ export default function Library() {
 
     //only update if the value changes
     useEffect(() => {
-        const fetchData = async () => {
-            //TODO:Change back when deploying 
-            
-            const response = await fetch(url)
+        const fetchData = async () => {            
+            const response = await fetch(urlGetAllBooks)
             console.log(process.env.REACT_APP_WEB_DEPLOYMENT);
             const json = await response.json()
             setBooks(json)
@@ -49,8 +49,7 @@ export default function Library() {
                                 <td style={mystyle}>{book.name}</td>
                                 <td style={mystyle}>{book.author}</td>
                                 <td style={mystyle}> {book.year_published}</td>
-                                {/* TODO:Remove localhost when in production */}
-                                <td style={mystyle}> <form action="http://localhost:8080/api/deletebook" method="post"><button id="book_id" name="book_id" value={`${book.book_id}`}>Delete</button></form></td>
+                                <td style={mystyle}> <form action={`${urlDeleteBook}`} method="post"><button id="book_id" name="book_id" value={`${book.book_id}`}>Delete</button></form></td>
 
                             </tr>
                         ))}
@@ -58,8 +57,7 @@ export default function Library() {
                 </table>
                 {/* Form to insert data */}
                 <div style={{ borderStyle: "solid", marginTop: "10px",paddingTop: "10px", paddingBottom: "10px"}}>
-                    {/* TODO:Remove localhost when in production */}
-                    <form action="http://localhost:8080/api/createbook" method="post">
+                    <form action={`${urlCreateBook}`} method="post">
                         <label for="fname">Book Name:</label><br />
                         <input type="text" id="name" name="name" value="Pirates of the carribean" /><br />
                         <label for="lname">Book Author:</label><br />
