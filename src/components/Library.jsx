@@ -6,6 +6,9 @@ export default function Library() {
     //declare list of stateful list 'books' and function 'setBooks' to update
     const [books, setBooks] = useState([])
 
+    //get url for current env
+    const url = process.env.REACT_APP_WEB_DEVELOPMENT == "TRUE" ? "/api/books" : "http://localhost:8080/api/books"
+
     //define css
     const mystyle = {
         border: "1px solid black",
@@ -15,8 +18,9 @@ export default function Library() {
     //only update if the value changes
     useEffect(() => {
         const fetchData = async () => {
-            //Change back when deploying 
-            const response = await fetch("http://localhost:8080/api/books")
+            //TODO:Change back when deploying 
+            
+            const response = await fetch(url)
             const json = await response.json()
             setBooks(json)
         }
