@@ -6,9 +6,14 @@ export default function Library() {
     const [books, setBooks] = useState([])
 
     //get url for current env
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const urlGetAllBooks = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const urlDeleteBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/deletebook/" : "http://localhost:8080/api/deletebook/"
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const urlCreateBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/createbook/" : "http://localhost:8080/api/createbook/"
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const urlEditBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/editbook/" : "http://localhost:8080/api/editbook/"
 
 
