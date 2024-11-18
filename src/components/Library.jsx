@@ -9,6 +9,8 @@ export default function Library() {
     const urlGetAllBooks = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
     const urlDeleteBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/deletebook/" : "http://localhost:8080/api/deletebook/"
     const urlCreateBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/createbook/" : "http://localhost:8080/api/createbook/"
+    const urlEditBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/editbook/" : "http://localhost:8080/api/editbook/"
+
 
     //define css
     const mystyle = {
@@ -50,6 +52,7 @@ export default function Library() {
                                 <td style={mystyle}>{book.author}</td>
                                 <td style={mystyle}> {book.year_published}</td>
                                 <td style={mystyle}> <form action={`${urlDeleteBook}`} method="post"><button id="book_id" name="book_id" value={`${book.book_id}`}>Delete</button></form></td>
+                                <td style={mystyle}> <form action={`${urlEditBook}`} method="post"><button id="book_id" name="book_id" value={`${book.book_id}`}>Edit</button></form></td>
 
                             </tr>
                         ))}
