@@ -6,6 +6,7 @@ export default function Library() {
     const [books, setBooks] = useState([])
 
     //get url for current env
+
     const urlGetAllBooks = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
     const urlDeleteBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/deletebook/" : "http://localhost:8080/api/deletebook/"
     const urlCreateBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/createbook/" : "http://localhost:8080/api/createbook/"
@@ -27,6 +28,7 @@ export default function Library() {
             setBooks(json)
         }
         fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     // Provide table with books 
     return (
