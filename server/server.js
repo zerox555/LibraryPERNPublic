@@ -17,10 +17,11 @@ app.use(express.static(path.join(__dirname, "../build")));
 // app.use('/api/books', bookController);
 // app.use('/api/createbook', bookController);
 
-const {all_book_get,create_book_post,delete_book_post} = require('./controllers/book_controller');
+const {all_book_get,create_book_post,delete_book_post,edit_book_post} = require('./controllers/book_controller');
 app.use('/api/books/', all_book_get);
 app.post('/api/createbook/', create_book_post);
 app.post('/api/deletebook/', delete_book_post);
+app.post('/api/editbook/', edit_book_post);
 
 
 
