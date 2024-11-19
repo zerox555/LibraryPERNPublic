@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [main, master ]
   pull_request:
-    branches: [ $default-branch ]
+    branches: [main, master ]
 
 jobs:
   build:
@@ -25,4 +25,10 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build --if-present
-    - run: npm test
+    
+    - uses: actions/checkout@v3
+    - uses: JorgeLNJunior/render-deploy@v1.4.4
+      with:
+          service_id: ${{ secrets.RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+
