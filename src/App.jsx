@@ -14,6 +14,9 @@ function App() {
             <li>
               <Link to='/library'>Library</Link>
             </li>
+            <li>
+              <Link to='/'>Placeholder 1</Link>
+            </li>
           </ul>
         </header>
         <main>
