@@ -1,33 +1,22 @@
 import './App.css';
-import { BrowserRouter as Router, Link, Route, Routes } from "react-router-dom"
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
 import Library from './components/Library';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
-    <div className="App">
+    <div className="container">
       <Router>
-        <header>
-          <ul>
-            <li>
-              <Link to='/'>Home</Link>
-            </li>
-            <li>
-              <Link to='/library'>Library</Link>
-            </li>
-            <li>
-              <Link to='/'>Placeholder 1</Link>
-            </li>
-          </ul>
-        </header>
-        <main>
-          <Routes>
-            <Route path='/'> </Route>
-            <Route path='/library' element={<Library />} />
-          </Routes>
-        </main>
+        <Navbar />
+
+        <Routes>
+          <Route path='/'> </Route>
+          <Route path='/library' element={<Library />} />
+        </Routes>
       </Router>
     </div>
-  );
+
+  )
 }
 
 export default App;
