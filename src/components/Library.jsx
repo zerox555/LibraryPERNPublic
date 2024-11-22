@@ -27,34 +27,35 @@ export default function Library() {
     };
 
     // Save the edited book
-  const handleSave = async () => {
-    try {
-      const updatedBook = { ...editableBook };
-      console.log(updatedBook);
-      const response = await fetch(`${urlEditBook}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedBook),
-      });
+    const handleSave = async () => {
+        try {
+            const updatedBook = { ...editableBook };
+            console.log(updatedBook);
+            const response = await fetch(`${urlEditBook}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updatedBook),
+            });
 
-      if (response.ok) {
-        setBooks((prevBooks) =>
-          prevBooks.map((book) =>
-            book.book_id === updatedBook.book_id ? updatedBook : book
-          )
-        );
-        alert("Book updated successfully!");
-      } else {
-        alert("Failed to update book");
-      }
-    } catch (error) {
-      alert("Error updating book");
-    } finally {
-      setEditableBookId(null); // Reset the editable state after saving
-    }
-  };
+            if (response.ok) {
+                setBooks((prevBooks) =>
+                    prevBooks.map((book) =>
+                        book.book_id === updatedBook.book_id ? updatedBook : book
+                    )
+                );
+                alert("Book updated successfully!");
+            } else {
+                alert("Failed to update book");
+            }
+        } catch (error) {
+            alert("Error updating book");
+        } finally {
+            setEditableBookId(null); // Reset the editable state after saving
+        }
+    };
+
 
     // Handle editing a book
     const handleEdit = (book) => {
@@ -151,7 +152,37 @@ export default function Library() {
                                             book.year_published
                                         )}
                                     </td>
-                                    <td style={mystyle}> <form action={`${urlDeleteBook}`} method="post"><button id="book_id" name="book_id" value={`${book.book_id}`}>Delete</button></form></td>
+                                    {/* <td style={mystyle}> <form action={`${urlDeleteBook}`} method="post"><button id="book_id" name="book_id" value={`${book.book_id}`}>Delete</button></form></td>
+                                     */}
+                                    <td style={mystyle}>
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                try {
+                                                    const response = await fetch(`${urlDeleteBook}`, {
+                                                        method: "POST",
+                                                        headers: {
+                                                            "Content-Type": "application/json",
+                                                        },
+                                                        body: JSON.stringify({ book_id: book.book_id }),
+                                                    });
+
+                                                    if (response.ok) {
+                                                        setBooks((prevBooks) =>
+                                                            prevBooks.filter((b) => b.book_id !== book.book_id)
+                                                        );
+                                                        alert("Book deleted successfully!");
+                                                    } else {
+                                                        alert("Failed to delete book");
+                                                    }
+                                                } catch (error) {
+                                                    alert("Error deleting book");
+                                                }
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
                                     <input id="book_id" value={`${book.book_id}`} type="hidden"></input>
                                     <td style={mystyle}>
                                         {editableBookId === null ?
@@ -174,7 +205,37 @@ export default function Library() {
 
                 {/* Form to insert data */}
                 <div style={{ borderStyle: "solid", marginTop: "10px", paddingTop: "10px", paddingBottom: "10px" }}>
-                    <form action={`${urlCreateBook}`} method="post">
+                    <form
+                        onSubmit={async (e) => {
+                            e.preventDefault(); // Prevent default form submission
+                            const formData = new FormData(e.target);
+                            const newBook = {
+                                name: formData.get("name"),
+                                author: formData.get("author"),
+                                year_published: formData.get("year_published"),
+                            };
+
+                            try {
+                                const response = await fetch(`${urlCreateBook}`, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify(newBook),
+                                });
+
+                                if (response.ok) {
+                                    const createdBook = await response.json();
+                                    setBooks((prevBooks) => [...prevBooks, createdBook]);
+                                    alert("Book created successfully!");
+                                } else {
+                                    alert("Failed to create book");
+                                }
+                            } catch (error) {
+                                alert("Error creating book");
+                            }
+                        }}
+                    >
                         <label for="fname">Book Name:</label><br />
                         <input type="text" id="name" name="name" defaultValue="Pirates of the carribean" /><br />
                         <label for="lname">Book Author:</label><br />
@@ -182,7 +243,12 @@ export default function Library() {
                         <label for="lname">Year Published:</label><br />
                         <input type="number" id="year_published" name="year_published" defaultValue="1943" /><br /><br />
                         <input type="submit" value="Submit"></input>
+
                     </form>
+
+
+
+
 
                 </div>
 
