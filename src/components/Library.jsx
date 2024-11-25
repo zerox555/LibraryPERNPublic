@@ -2,77 +2,13 @@ import { useState, useEffect } from "react";
 import "../App.css";
 
 export default function Library() {
-    //declare list of stateful list 'books' and function 'setBooks' to update
+
+    //states
     const [books, setBooks] = useState([])
-
-
-    //get current book being updated
-    const [editableBook, setEditableBook] = useState(null);
-
-    //Tracks which bookId is being edited
-    const [editableBookId, setEditableBookId] = useState(null); // Tracks the ID of the book being edited
+    const [filterText,setFilterText] = useState("")
 
     //get url for current env
     const urlGetAllBooks = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
-    const urlDeleteBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/deletebook/" : "http://localhost:8080/api/deletebook/"
-    const urlCreateBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/createbook/" : "http://localhost:8080/api/createbook/"
-    const urlEditBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/editbook/" : "http://localhost:8080/api/editbook/"
-
-    // Handle changes in input fields
-    const handleInputChange = (e, field) => {
-        setEditableBook((prevState) => ({
-            ...prevState,
-            [field]: e.target.value,  // Update the specific field in editableBook
-        }));
-    };
-
-    // Save the edited book
-    const handleSave = async () => {
-        try {
-            const updatedBook = { ...editableBook };
-            console.log(updatedBook);
-            const response = await fetch(`${urlEditBook}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(updatedBook),
-            });
-
-            if (response.ok) {
-                setBooks((prevBooks) =>
-                    prevBooks.map((book) =>
-                        book.book_id === updatedBook.book_id ? updatedBook : book
-                    )
-                );
-                alert("Book updated successfully!");
-            } else {
-                alert("Failed to update book");
-            }
-        } catch (error) {
-            alert("Error updating book");
-        } finally {
-            setEditableBookId(null); // Reset the editable state after saving
-        }
-    };
-
-
-    // Handle editing a book
-    const handleEdit = (book) => {
-        setEditableBookId(book.book_id); // Set the ID of the book being edited
-        setEditableBook({
-            name: book.name,
-            author: book.author,
-            year_published: book.year_published,
-            book_id: book.book_id,
-        });
-    };
-
-    // Cancel editing
-    const handleCancel = () => {
-        setEditableBookId(null); // Reset editable state
-    };
-
 
     //only update if the value changes
     useEffect(() => {
@@ -87,25 +23,36 @@ export default function Library() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Provide table with books 
     return (
         <div style={{ display: "flex", justifyContent: "center" }}>
-
             <div style={{ textAlign: 'center' }}>
                 <h1>Library</h1>
-                {/* Table with books */}
-                <BookTable setBooks={setBooks} handleInputChange={handleInputChange} handleSave={handleSave} handleCancel={handleCancel} handleEdit={handleEdit} urlEditBook={urlEditBook} urlDeleteBook={urlDeleteBook} books={books} editableBook={editableBook} editableBookId={editableBookId}></BookTable>
-
-                {/* Form to insert data */}
-                <SubmitBookDiv setBooks={setBooks} urlCreateBook={urlCreateBook}></SubmitBookDiv>
-
+                <BookTable setBooks={setBooks} books={books} filterText={filterText} setFilterText={setFilterText}></BookTable>
+                <SubmitBookDiv setBooks={setBooks}></SubmitBookDiv>
             </div>
         </div>
 
     )
 }
 
-function SubmitBookDiv({ setBooks, urlCreateBook }) {
+function BookSearchBar({setFilterText}) {
+    return (
+        <div>
+            <td></td>
+            <input
+            style={{width:"100%", height:"40px"}}
+                type="text"
+                placeholder="Search..."
+                onChange={(e) => setFilterText(e)}/>
+        </div>
+    )
+}
+
+function SubmitBookDiv({ setBooks }) {
+
+    //get url for current env
+    const urlCreateBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/createbook/" : "http://localhost:8080/api/createbook/"
+
     return (
         <div style={{ borderStyle: "solid", marginTop: "10px", paddingTop: "10px", paddingBottom: "10px" }}>
             <form
@@ -146,15 +93,85 @@ function SubmitBookDiv({ setBooks, urlCreateBook }) {
                 <label for="lname">Year Published:</label><br />
                 <input type="number" id="year_published" name="year_published" defaultValue="1943" /><br /><br />
                 <input type="submit" value="Submit"></input>
-
             </form>
         </div>
     )
 
 }
 
-function BookTable({ setBooks,handleInputChange, handleSave, handleCancel, handleEdit, urlEditBook, urlDeleteBook , books ,editableBook, editableBookId}) {
+function BookTable({ setBooks, books, filterText,setFilterText}) {
 
+    //get path for current env
+    const urlDeleteBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/deletebook/" : "http://localhost:8080/api/deletebook/"
+    const urlEditBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/editbook/" : "http://localhost:8080/api/editbook/"
+
+    //get current book being updated
+    const [editableBook, setEditableBook] = useState(null);
+
+    //Tracks which bookId is being edited
+    const [editableBookId, setEditableBookId] = useState(null); // Tracks the ID of the book being edited
+
+    // Save the edited book
+    const handleSave = async () => {
+        try {
+            const updatedBook = { ...editableBook };
+            console.log(updatedBook);
+            const response = await fetch(urlEditBook, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updatedBook),
+            });
+
+            if (response.ok) {
+                setBooks((prevBooks) =>
+                    prevBooks.map((book) =>
+                        book.book_id === updatedBook.book_id ? updatedBook : book
+                    )
+                );
+                alert("Book updated successfully!");
+            } else {
+                alert("Failed to update book");
+            }
+        } catch (error) {
+            alert("Error updating book");
+        } finally {
+            setEditableBookId(null); // Reset the editable state after saving
+        }
+    };
+
+    // Handle changes in input fields
+    const handleInputChange = (e, field) => {
+        setEditableBook((prevState) => ({
+            ...prevState,
+            [field]: e.target.value,  // Update the specific field in editableBook
+        }));
+    };
+
+    // Handle editing a book
+    const handleEdit = (book) => {
+        setEditableBookId(book.book_id); // Set the ID of the book being edited
+        setEditableBook({
+            name: book.name,
+            author: book.author,
+            year_published: book.year_published,
+            book_id: book.book_id,
+        });
+    };
+
+    // Cancel editing
+    const handleCancel = () => {
+        setEditableBookId(null); // Reset editable state
+    };
+
+    // Function to filter books based on filterText
+    const getFilteredBooks = () => {
+        // const txt = filterText.target.value;
+        return books.filter((book) =>
+            book.name.toLowerCase().includes(filterText.target.value.toString().toLowerCase())
+        );
+    };
 
     const mystyle = {
         border: "1px solid black",
@@ -166,12 +183,17 @@ function BookTable({ setBooks,handleInputChange, handleSave, handleCancel, handl
             <table style={mystyle}>
                 <tbody>
                     <tr>
+                        <td colSpan={6} style={{padding:"10px"}}>
+                            <BookSearchBar setFilterText={setFilterText}></BookSearchBar>
+                        </td>
+                    </tr>
+                    <tr>
                         <th style={mystyle}>Book</th>
                         <th style={mystyle}>Author</th>
                         <th style={mystyle}>Year Published</th>
-                        <th style={mystyle}></th>
+                        <th style={mystyle} colSpan={3}></th>
                     </tr>
-                    {books.map((book, index) => (
+                    {getFilteredBooks().map((book, index) => (
                         <tr key={index} style={{
                             paddingBottom: '25px'
                         }}>
@@ -248,11 +270,8 @@ function BookTable({ setBooks,handleInputChange, handleSave, handleCancel, handl
                                     }}>Back</button>)}
                             </td>
                             <td style={mystyle}> <button name="book_id" value={`${book.book_id}`} type="button" onClick={handleSave}>Save</button></td>
-
-
                         </tr>
                     ))}
-
                 </tbody>
             </table>
         </form>
