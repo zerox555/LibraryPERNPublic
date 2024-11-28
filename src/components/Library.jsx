@@ -5,7 +5,7 @@ export default function Library() {
 
     //states
     const [books, setBooks] = useState([])
-    const [filterText,setFilterText] = useState("")
+    const [loading, setLoading] = useState(0)
 
     //get url for current env
     const urlGetAllBooks = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
@@ -17,7 +17,7 @@ export default function Library() {
             console.log(process.env.REACT_APP_WEB_DEPLOYMENT);
             const json = await response.json()
             setBooks(json)
-
+            setLoading(1)
         }
         fetchData()
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -27,7 +27,11 @@ export default function Library() {
         <div style={{ display: "flex", justifyContent: "center" }}>
             <div style={{ textAlign: 'center' }}>
                 <h1>Library</h1>
-                <BookTable setBooks={setBooks} books={books} filterText={filterText} setFilterText={setFilterText}></BookTable>
+                {loading === 1 ? (
+                    <BookTable setBooks={setBooks} books={books}></BookTable>) : (
+                    <p>Loading books...</p>
+                )
+                }
                 <SubmitBookDiv setBooks={setBooks}></SubmitBookDiv>
             </div>
         </div>
@@ -35,15 +39,15 @@ export default function Library() {
     )
 }
 
-function BookSearchBar({setFilterText}) {
+function BookSearchBar({ setFilterText }) {
     return (
         <div>
             <td></td>
             <input
-            style={{width:"100%", height:"40px"}}
+                style={{ width: "100%", height: "40px" }}
                 type="text"
                 placeholder="Search..."
-                onChange={(e) => setFilterText(e)}/>
+                onChange={(e) => setFilterText(e.target.value)} />
         </div>
     )
 }
@@ -99,7 +103,7 @@ function SubmitBookDiv({ setBooks }) {
 
 }
 
-function BookTable({ setBooks, books, filterText,setFilterText}) {
+function BookTable({ setBooks, books }) {
 
     //get path for current env
     const urlDeleteBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/deletebook/" : "http://localhost:8080/api/deletebook/"
@@ -110,6 +114,8 @@ function BookTable({ setBooks, books, filterText,setFilterText}) {
 
     //Tracks which bookId is being edited
     const [editableBookId, setEditableBookId] = useState(null); // Tracks the ID of the book being edited
+
+    const [filterText, setFilterText] = useState("")
 
     // Save the edited book
     const handleSave = async () => {
@@ -167,10 +173,16 @@ function BookTable({ setBooks, books, filterText,setFilterText}) {
 
     // Function to filter books based on filterText
     const getFilteredBooks = () => {
-        // const txt = filterText.target.value;
-        return books.filter((book) =>
-            book.name.toLowerCase().includes(filterText.target.value.toString().toLowerCase())
-        );
+        console.log(books.length);
+        if (books.length !== 0) {
+            return books.filter((book) =>
+                book.name.toLowerCase().includes(filterText.toString().toLowerCase())
+            );
+        } else {
+            return books;
+        }
+
+
     };
 
     const mystyle = {
@@ -183,7 +195,7 @@ function BookTable({ setBooks, books, filterText,setFilterText}) {
             <table style={mystyle}>
                 <tbody>
                     <tr>
-                        <td colSpan={6} style={{padding:"10px"}}>
+                        <td colSpan={6} style={{ padding: "10px" }}>
                             <BookSearchBar setFilterText={setFilterText}></BookSearchBar>
                         </td>
                     </tr>
