@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "../App.css";
 
-export default function Library({loggedIn}) {
+export default function Library() {
 
     //states
     const [books, setBooks] = useState([])
