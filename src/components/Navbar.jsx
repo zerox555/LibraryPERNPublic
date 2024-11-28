@@ -11,6 +11,9 @@ export default function Navbar() {
                 <li>
                     <Link to="/library">Library</Link>
                 </li>
+                <li>
+                    <Link to="/login">Login</Link>
+                </li>
             </ul>
 
     </nav>
