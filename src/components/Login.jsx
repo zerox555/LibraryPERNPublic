@@ -5,10 +5,29 @@ export default function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Logging in with", username, password);
-        // Add login logic here
+        const urlAuthUser = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/authuser/" : "http://localhost:8080/api/authuser/"
+        try {
+            const existingUser = {
+                name: username,
+                password: password
+            };
+            const response = await fetch(urlAuthUser, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(existingUser),
+            });
+            if (response.ok && await response.json()) {
+                alert("User Logged in!");
+            } else {
+                alert("Failed to login user");
+            }
+        } catch (error) {
+            alert("Error logging in user");
+        }
     };
 
     return (
