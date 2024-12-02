@@ -2,10 +2,12 @@ const books = require('express').Router()
 const db = require('../models')
 const { Book } = db
 
+const {all_book_get,create_book_post,delete_book_post} = require("../services/book_service");
+
 // GET ALL BOOKS
-const all_book_get = async (req, res) => {
+const all_book_get_controller = async (req, res) => {
     try {
-        const foundBooks = await Book.findAll()
+        const foundBooks = await all_book_get();
         res.status(200).json(foundBooks)
     } catch (err) {
         res.status(500).send("Server error")
@@ -14,15 +16,10 @@ const all_book_get = async (req, res) => {
 };
 
 // ADD NEW BOOK
-const create_book_post = async (req, res) => {
+const create_book_post_controller = async (req, res) => {
     try {
         const { name, author, year_published } = req.body;
-        const newBook = await Book.create({
-            name,
-            author,
-            year_published
-        }
-        )
+        const newBook = await create_book_post({name,author,year_published});
         res.status(200).json(newBook)
     } catch (err) {
         res.status(500).send("Server error")
@@ -31,21 +28,21 @@ const create_book_post = async (req, res) => {
 }
 
 // DELETE A BOOK
-const delete_book_post = async (req, res) => {
+const delete_book_post_controller = async (req, res) => {
     try {
-        const { book_id } = req.body;
+        const { book_id } = req.body; 
 
-        const deleteStatus = Book.destroy({
-            where: {
-                book_id
-            }
-        })
-        res.status(200).json(deleteStatus)
+        if (!book_id) {
+            return res.status(400).json({ message: "Book ID is required" });
+        }
+        console.log(book_id);
+        const deleteStatus = await delete_book_post(book_id); // Call the service to delete the book
+        res.status(200).json(deleteStatus); // Send the status back in the response
     } catch (err) {
-        res.status(500).send("Server error")
-        console.log(err)
+        res.status(500).send("Server error");
+        console.log(err); // Log the error for debugging
     }
-}
+};
 
 //MODIFY A BOOK
 const edit_book_post = async (req, res) => {
@@ -71,8 +68,8 @@ const edit_book_post = async (req, res) => {
 }
 
 module.exports = {
-    all_book_get,
-    create_book_post,
-    delete_book_post,
+    all_book_get_controller,
+    create_book_post_controller,
+    delete_book_post_controller,
     edit_book_post
 }
