@@ -1,13 +1,4 @@
-const users = require('express').Router()
-const { useState } = require('react');
-const db = require('../models')
-const { User } = db
-const argon2 = require('argon2');
-const jwt = require("jsonwebtoken");
-
 const { create_user_post, auth_user } = require("../services/user_service");
-
-
 
 // ADD NEW USER
 const create_user_post_controller = async (req, res) => {
@@ -33,18 +24,7 @@ const auth_user_controller = async (req, res) => {
     }
 }
 
-// Log out user [Not completed]
-const logout_user = async (req, res) => {
-    //remove from state
-    try {
-        //hash code here 
-        res.status(200).json(newUser)
-    } catch (err) {
-    }
-}
-
 module.exports = {
     create_user_post_controller,
     auth_user_controller,
-    logout_user,
 }
