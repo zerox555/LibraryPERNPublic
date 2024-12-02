@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "../App.css";
 
-export default function Library() {
+export default function Library({ token }) {
 
     //states
     const [books, setBooks] = useState([])
@@ -13,8 +13,16 @@ export default function Library() {
     //only update if the value changes
     useEffect(() => {
         const fetchData = async () => {
-            const response = await fetch(urlGetAllBooks)
-            console.log(process.env.REACT_APP_WEB_DEPLOYMENT);
+            // const response = await fetch(urlGetAllBooks)
+
+            const response = await fetch(urlGetAllBooks, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
             const json = await response.json()
             setBooks(json)
             setLoading(1)
@@ -27,12 +35,19 @@ export default function Library() {
         <div style={{ display: "flex", justifyContent: "center" }}>
             <div style={{ textAlign: 'center' }}>
                 <h1>Library</h1>
-                {loading === 1 ? (
-                    <BookTable setBooks={setBooks} books={books}></BookTable>) : (
-                    <p>Loading books...</p>
-                )
-                }
-                <SubmitBookDiv setBooks={setBooks}></SubmitBookDiv>
+                {token === "" ? (
+                    <p>You need to be logged in first!</p>
+                ) : (
+                    <>
+                        {loading === 1 ? (
+                            <BookTable setBooks={setBooks} books={books} token={token}></BookTable>) : (
+                            <p>Loading books...</p>
+                        )
+                        }
+                        <SubmitBookDiv setBooks={setBooks} token={token}></SubmitBookDiv>
+                    </>
+                )}
+
             </div>
         </div>
 
@@ -52,7 +67,7 @@ function BookSearchBar({ setFilterText }) {
     )
 }
 
-function SubmitBookDiv({ setBooks }) {
+function SubmitBookDiv({ setBooks, token }) {
 
     //get url for current env
     const urlCreateBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/createbook/" : "http://localhost:8080/api/createbook/"
@@ -73,6 +88,7 @@ function SubmitBookDiv({ setBooks }) {
                         const response = await fetch(urlCreateBook, {
                             method: "POST",
                             headers: {
+                                "Authorization": `Bearer ${token}`,
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify(newBook),
@@ -103,7 +119,7 @@ function SubmitBookDiv({ setBooks }) {
 
 }
 
-function BookTable({ setBooks, books }) {
+function BookTable({ setBooks, books, token }) {
 
     //get path for current env
     const urlDeleteBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/deletebook/" : "http://localhost:8080/api/deletebook/"
@@ -121,10 +137,10 @@ function BookTable({ setBooks, books }) {
     const handleSave = async () => {
         try {
             const updatedBook = { ...editableBook };
-            console.log(updatedBook);
             const response = await fetch(urlEditBook, {
                 method: "POST",
                 headers: {
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(updatedBook),
@@ -173,7 +189,6 @@ function BookTable({ setBooks, books }) {
 
     // Function to filter books based on filterText
     const getFilteredBooks = () => {
-        console.log(books.length);
         if (books.length !== 0) {
             return books.filter((book) =>
                 book.name.toLowerCase().includes(filterText.toString().toLowerCase())
@@ -250,6 +265,7 @@ function BookTable({ setBooks, books }) {
                                             const response = await fetch(`${urlDeleteBook}`, {
                                                 method: "POST",
                                                 headers: {
+                                                    "Authorization": `Bearer ${token}`,
                                                     "Content-Type": "application/json",
                                                 },
                                                 body: JSON.stringify({ book_id: book.book_id }),
