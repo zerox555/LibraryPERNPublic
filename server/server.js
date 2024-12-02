@@ -22,10 +22,10 @@ const {all_book_get,create_book_post,delete_book_post,edit_book_post} = require(
 const {all_user_get,create_user_post,user_auth,check_jwt_token} = require('./controllers/user_controller');
 
 //for books
-app.use('/api/books/', all_book_get);
-app.post('/api/createbook/', create_book_post);
-app.post('/api/deletebook/', delete_book_post);
-app.post('/api/editbook/', edit_book_post);
+app.use('/api/books/',verifyToken, all_book_get);
+app.post('/api/createbook/',verifyToken, create_book_post);
+app.post('/api/deletebook/',verifyToken, delete_book_post);
+app.post('/api/editbook/',verifyToken, edit_book_post);
 
 //for users
 app.use("/api/users/",all_user_get);
