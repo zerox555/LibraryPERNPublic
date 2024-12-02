@@ -5,83 +5,31 @@ const { User } = db
 const argon2 = require('argon2');
 const jwt = require("jsonwebtoken");
 
+const { create_user_post, auth_user } = require("../services/user_service");
 
 
-// GET ALL USERS (JUST FOR TESTING)
-const all_user_get = async (req, res) => {
-    try {
-        const foundUsers = await User.findAll()
-        res.status(200).json(foundUsers)
-    } catch (err) {
-        res.status(500).send("Server error")
-        console.log(err)
-    }
-};
 
-// ADD NEW BOOK
-const create_user_post = async (req, res) => {
+// ADD NEW USER
+const create_user_post_controller = async (req, res) => {
     try {
         const { name, password } = req.body;
-        const hash = await argon2.hash(password);
-        const newUser = await User.create({
-            name,
-            password: hash
-        }
-        )
-        //hash code here 
-        res.status(200).json(newUser)
+        const newUser = await create_user_post({ name, password });
+        res.status(200).send(newUser);
     } catch (err) {
-        res.status(500).send("Server error")
-        console.log(err)
+        res.status(500).send("Server error");
+        console.log(err);
     }
 }
 
-const user_auth = async (req, res) => {
-    let token;
-
+// AUTHENTICATES USER
+const auth_user_controller = async (req, res) => {
     try {
         const { name, password } = req.body;
-        let authenticated = false;
-        const user = await User.findOne({
-            where: {
-                name: name
-            }
-        })
-
-        if (await argon2.verify(user.password, password)) {
-            authenticated = true
-            //set jwt token here 
-            try {
-                //Creating JWT token
-                token = jwt.sign(
-                    {
-                        id:user.id,
-                        name:name,
-                    },
-                    // secret key value
-                    process.env.REACT_APP_JWT_SECRET,
-                    { expiresIn: "1h" }
-                )
-
-            } catch (err) {
-                console.log(err);
-                const error =
-                    new Error("Error! Something went wrong.");
-                return next(error);
-            }
-        }
-        else {
-        }
-        res.status(200).json({success: authenticated,
-            data:{
-                id:user.id,
-                name:name,
-                token:token,
-            }
-        })
+        const validUser = await auth_user({ name, password });
+        res.status(200).json(validUser);
     } catch (err) {
-        res.status(500).send("Server error")
-        console.log(err)
+        res.status(500).send("Server error");
+        console.log(err);
     }
 }
 
@@ -95,26 +43,8 @@ const logout_user = async (req, res) => {
     }
 }
 
-// Check jwt Token TODO:REMOVE (already in middleware)
-const check_jwt_token = async (req, res) => {
-    try {
-        const token =
-        req.headers.authorization.split(' ')[1];
-        
-        // Verify token
-        const verified = jwt.verify(token,process.env.REACT_APP_JWT_SECRET);
-        
-        res.status(200).json({"token exist: " :verified});
-        // res.status(200).json(req.headers.authorization.split(' ')[1]);
-    } catch (err) {
-        res.status(500).json({"Invalid token " :  err});
-    }
-}
-
 module.exports = {
-    all_user_get,
-    create_user_post,
-    user_auth,
+    create_user_post_controller,
+    auth_user_controller,
     logout_user,
-    check_jwt_token
 }

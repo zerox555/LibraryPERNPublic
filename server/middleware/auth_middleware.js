@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 
-const verifyToken = async (req, res, next) => {
+const verify_jwt_token = async (req, res, next) => {
     const authHeader = req.headers.authorization;
   
     if (!authHeader) {
@@ -20,5 +20,5 @@ const verifyToken = async (req, res, next) => {
   };
 
   module.exports ={
-    verifyToken
+    verify_jwt_token
   }

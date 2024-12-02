@@ -4,7 +4,6 @@ import Library from './components/Library';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Login from './components/Login';
-import User from './components/User';
 import Register from './components/Register';
 import { useState } from 'react';
 
@@ -15,7 +14,7 @@ function App() {
   return (
     <div className="container">
       <Router>
-        <Navbar loggedIn={loggedIn} token={token}/>
+        <Navbar loggedIn={loggedIn} token={token} setToken={setToken} setLoggedIn={setLoggedIn}/>
 
         <Routes>
           <Route path="/" element={<Navigate to="/home" />}></Route>
@@ -23,7 +22,6 @@ function App() {
           <Route path='/login' element={<Login setLoggedIn={setLoggedIn} setToken={setToken}/>} />
           <Route path='/register' element={<Register />} />
           <Route path='/home' element={<Home />} />
-          <Route path='/user' element ={<User/>}/>
         </Routes>
       </Router>
     </div>
