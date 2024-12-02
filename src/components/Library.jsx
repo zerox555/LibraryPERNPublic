@@ -35,12 +35,19 @@ export default function Library({ token }) {
         <div style={{ display: "flex", justifyContent: "center" }}>
             <div style={{ textAlign: 'center' }}>
                 <h1>Library</h1>
-                {loading === 1 ? (
-                    <BookTable setBooks={setBooks} books={books} token={token}></BookTable>) : (
-                    <p>Loading books...</p>
-                )
-                }
-                <SubmitBookDiv setBooks={setBooks} token={token}></SubmitBookDiv>
+                {token === "" ? (
+                    <p>You need to be logged in first!</p>
+                ) : (
+                    <>
+                        {loading === 1 ? (
+                            <BookTable setBooks={setBooks} books={books} token={token}></BookTable>) : (
+                            <p>Loading books...</p>
+                        )
+                        }
+                        <SubmitBookDiv setBooks={setBooks} token={token}></SubmitBookDiv>
+                    </>
+                )}
+
             </div>
         </div>
 
@@ -60,7 +67,7 @@ function BookSearchBar({ setFilterText }) {
     )
 }
 
-function SubmitBookDiv({ setBooks, token}) {
+function SubmitBookDiv({ setBooks, token }) {
 
     //get url for current env
     const urlCreateBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/createbook/" : "http://localhost:8080/api/createbook/"
