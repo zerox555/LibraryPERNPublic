@@ -13,29 +13,24 @@ app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname, "../build")));
 
-//CONTROLLERS
-// const bookController = require('./controllers/book_controller');
-// app.use('/api/books', bookController);
-// app.use('/api/createbook', bookController);
+const {all_book_get_controller,create_book_post_controller,delete_book_post_controller,edit_book_post_controller} = require('./controllers/book_controller');
+const {create_user_post_controller,auth_user_controller} = require('./controllers/user_controller');
+const {verify_jwt_token} = require("./middleware/auth_middleware")
 
-const {all_book_get,create_book_post,delete_book_post,edit_book_post} = require('./controllers/book_controller');
-const {all_user_get,create_user_post,user_auth,check_jwt_token} = require('./controllers/user_controller');
+// FOR BOOKS
+app.use('/api/books/',verify_jwt_token, all_book_get_controller);
+app.post('/api/createbook/',verify_jwt_token, create_book_post_controller);
+app.post('/api/deletebook/',verify_jwt_token, delete_book_post_controller);
+app.post('/api/editbook/',verify_jwt_token, edit_book_post_controller);
 
-//for books
-app.use('/api/books/',verifyToken, all_book_get);
-app.post('/api/createbook/',verifyToken, create_book_post);
-app.post('/api/deletebook/',verifyToken, delete_book_post);
-app.post('/api/editbook/',verifyToken, edit_book_post);
+// FOR USERS
+// app.use("/api/users/",all_user_get);
+app.use("/api/createuser/", create_user_post_controller);
+app.use('/api/authuser/',auth_user_controller);
 
-//for users
-app.use("/api/users/",all_user_get);
-app.use("/api/createuser/", create_user_post);
-app.use('/api/authuser/',user_auth);
-
-//TESTING
-app.use('/api/verifytoken/',check_jwt_token);
-app.use('/protected',verifyToken,check_jwt_token);
-
+// TESTING
+// app.use('/api/verifytoken/',check_jwt_token);
+// app.use('/protected',verify_jwt_token,check_jwt_token);
 
 
 app.use('*', (req,res) =>{

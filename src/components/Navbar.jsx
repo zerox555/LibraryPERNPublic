@@ -1,7 +1,7 @@
 import "../styles.css"
 import { Link } from "react-router-dom"
 
-export default function Navbar({ loggedIn, token }) {
+export default function Navbar({ loggedIn, token, setToken, setLoggedIn }) {
     return <nav className="nav">
         <Link to="/" className="site-title">Library Of Aeons</Link>
         <ul>
@@ -23,7 +23,12 @@ export default function Navbar({ loggedIn, token }) {
                         <Link to="/profile">Profile</Link>
                     </li>
                     <li>
-                        <Link to="/logout">Logout</Link>
+                        <button onClick={(e) => {
+                            setToken("");
+                            setLoggedIn(false)
+                        }}
+
+                        > logout</button>
                     </li>
                 </>
             ) : (
@@ -36,17 +41,13 @@ export default function Navbar({ loggedIn, token }) {
                     </li>
                 </>
             )}
-            {/* TODO: Remove this only for testing */}
             <li>
-                <Link to="/user">User</Link>
+                <p1 style={{ color: loggedIn ? "green" : "red" }}>Logged in: {loggedIn ? "Yes" : "No"}</p1>
             </li>
             <li>
-                <p1 style={{color: loggedIn ? "green": "red"}}>Logged in: {loggedIn ? "Yes" : "No"}</p1>
-            </li>
-            <li>
-                <p1 style={{width:"100px" ,display:"inline-block"}}>Token: {loggedIn ? token : ""}</p1>
+                <p1 style={{ width: "100px", display: "inline-block" }}>Token: {loggedIn ? token : ""}</p1>
             </li>
         </ul>
 
-    </nav>
+    </nav >
 }
