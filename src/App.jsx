@@ -10,16 +10,17 @@ import { useState } from 'react';
 
 function App() {
   const [loggedIn,setLoggedIn] = useState(false)
+  const [token,setToken] = useState("")
 
   return (
     <div className="container">
       <Router>
-        <Navbar loggedIn={loggedIn}/>
+        <Navbar loggedIn={loggedIn} token={token}/>
 
         <Routes>
           <Route path="/" element={<Navigate to="/home" />}></Route>
           <Route path='/library' element={<Library />} />
-          <Route path='/login' element={<Login setLoggedIn={setLoggedIn} />} />
+          <Route path='/login' element={<Login setLoggedIn={setLoggedIn} setToken={setToken}/>} />
           <Route path='/register' element={<Register />} />
           <Route path='/home' element={<Home />} />
           <Route path='/user' element ={<User/>}/>

@@ -1,7 +1,7 @@
 import "../styles.css"
 import { Link } from "react-router-dom"
 
-export default function Navbar({ loggedIn }) {
+export default function Navbar({ loggedIn, token }) {
     return <nav className="nav">
         <Link to="/" className="site-title">Library Of Aeons</Link>
         <ul>
@@ -42,6 +42,9 @@ export default function Navbar({ loggedIn }) {
             </li>
             <li>
                 <p1 style={{color: loggedIn ? "green": "red"}}>Logged in: {loggedIn ? "Yes" : "No"}</p1>
+            </li>
+            <li>
+                <p1 style={{width:"100px" ,display:"inline-block"}}>Token: {loggedIn ? token : ""}</p1>
             </li>
         </ul>
 
