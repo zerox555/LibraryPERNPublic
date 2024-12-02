@@ -54,6 +54,7 @@ const user_auth = async (req, res) => {
                 const jwt = require("jsonwebtoken")
                 token = jwt.sign(
                     {
+                        id:user.id,
                         name:name,
                     },
                     // secret key value
@@ -72,6 +73,7 @@ const user_auth = async (req, res) => {
         }
         res.status(200).json({success: authenticated,
             data:{
+                id:user.id,
                 name:name,
                 token:token,
             }
