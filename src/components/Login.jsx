@@ -20,7 +20,12 @@ export default function Login() {
                 },
                 body: JSON.stringify(existingUser),
             });
-            if (response.ok && await response.json()) {
+
+            //get user auth boolean
+            const { success, data: { token } } = await response.json();
+            console.log(success);
+            console.log(token);
+            if (response.ok && success) {
                 alert("User Logged in!");
             } else {
                 alert("Failed to login user");
