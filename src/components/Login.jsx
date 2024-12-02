@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Login.css";
 
-export default function Login() {
+export default function Login({setLoggedIn}) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -26,11 +26,14 @@ export default function Login() {
             console.log(success);
             console.log(token);
             if (response.ok && success) {
+                setLoggedIn(true);
                 alert("User Logged in!");
             } else {
                 alert("Failed to login user");
             }
         } catch (error) {
+
+            console.log(error);
             alert("Error logging in user");
         }
     };
