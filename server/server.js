@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname, "../build")));
 
-const {all_book_get_controller,create_book_post_controller,delete_book_post_controller,edit_book_post} = require('./controllers/book_controller');
+const {all_book_get_controller,create_book_post_controller,delete_book_post_controller,edit_book_post_controller} = require('./controllers/book_controller');
 const {create_user_post_controller,auth_user_controller} = require('./controllers/user_controller');
 const {verify_jwt_token} = require("./middleware/auth_middleware")
 
@@ -21,7 +21,7 @@ const {verify_jwt_token} = require("./middleware/auth_middleware")
 app.use('/api/books/',verify_jwt_token, all_book_get_controller);
 app.post('/api/createbook/',verify_jwt_token, create_book_post_controller);
 app.post('/api/deletebook/',verify_jwt_token, delete_book_post_controller);
-app.post('/api/editbook/',verify_jwt_token, edit_book_post);
+app.post('/api/editbook/',verify_jwt_token, edit_book_post_controller);
 
 // FOR USERS
 // app.use("/api/users/",all_user_get);

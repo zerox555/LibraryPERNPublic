@@ -14,9 +14,8 @@ const all_book_get = async () => {
 };
 
 // ADD NEW BOOK
-const create_book_post = async (bookData) => {
+const create_book_post = async ({name,author,year_published}) => {
     try {
-        const { name, author, year_published } = bookData;
         const newBook = await Book.create({
             name,
             author,
@@ -46,10 +45,27 @@ const delete_book_post = async (book_id) => {
     }
 }
 
+// MODIFY A BOOK
+const edit_book_post = async ({ name, author, year_published, book_id }) => {
+    try {
+        //get book by book id
+        const bookSelected = await Book.findOne({ where: { book_id: book_id } })
+        //change fields
+        bookSelected.name = name;
+        bookSelected.author = author;
+        bookSelected.year_published = year_published;
+        //write it back to db
+        const editStatus = await bookSelected.save();
+        return editStatus
+    } catch (err) {
+        console.log(err)
+    }
+}
 
 
 module.exports = {
     all_book_get,
     create_book_post,
-    delete_book_post
+    delete_book_post,
+    edit_book_post
 }
