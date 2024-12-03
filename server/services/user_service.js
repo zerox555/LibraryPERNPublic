@@ -39,6 +39,7 @@ const auth_user = async (userData) => {
                     {
                         id: user.id,
                         name: userData.name,
+                        roles:user.roles
                         //TODO: ADD ROLES HERE
                     },
                     // secret key value
