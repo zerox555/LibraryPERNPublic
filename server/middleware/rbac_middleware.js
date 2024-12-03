@@ -1,4 +1,3 @@
-const { getPermissionsByRole } = require('../services/role_service');
 const jwt = require('jsonwebtoken');
 
 
