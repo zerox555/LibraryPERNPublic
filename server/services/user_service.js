@@ -9,7 +9,8 @@ const create_user_post = async (userData) => {
         const hash = await argon2.hash(userData.password);
         const newUser = await User.create({
             name: userData.name,
-            password: hash
+            password: hash,
+            roles:["user"]
         }
         );
         return newUser;
@@ -38,6 +39,7 @@ const auth_user = async (userData) => {
                     {
                         id: user.id,
                         name: userData.name,
+                        //TODO: ADD ROLES HERE
                     },
                     // secret key value
                     process.env.REACT_APP_JWT_SECRET,
