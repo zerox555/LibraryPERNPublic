@@ -61,7 +61,7 @@ export default function Register() {
                         required
                     />
                 </div>
-                <button type="submit" className="login-button">Login</button>
+                <button type="submit" className="login-button">Register</button>
             </form>
         </div>
     );
