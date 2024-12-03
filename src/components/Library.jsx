@@ -3,18 +3,16 @@ import "../App.css";
 
 export default function Library({ token }) {
 
-    //states
+    // States
     const [books, setBooks] = useState([])
     const [loading, setLoading] = useState(0)
 
-    //get url for current env
+    // Get current env URL
     const urlGetAllBooks = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/books/" : "http://localhost:8080/api/books/"
 
-    //only update if the value changes
+    // Only update if the value changes
     useEffect(() => {
         const fetchData = async () => {
-            // const response = await fetch(urlGetAllBooks)
-
             const response = await fetch(urlGetAllBooks, {
                 method: "GET",
                 headers: {
@@ -22,7 +20,6 @@ export default function Library({ token }) {
                     "Content-Type": "application/json",
                 },
             });
-
             const json = await response.json()
             setBooks(json)
             setLoading(1)
@@ -99,7 +96,8 @@ function SubmitBookDiv({ setBooks, token }) {
                             setBooks((prevBooks) => [...prevBooks, createdBook]);
                             alert("Book created successfully!");
                         } else {
-                            alert("Failed to create book");
+                            const errorResponse = await response.json();
+                            alert(errorResponse.message);
                         }
                     } catch (error) {
                         alert("Error creating book");
@@ -154,7 +152,8 @@ function BookTable({ setBooks, books, token }) {
                 );
                 alert("Book updated successfully!");
             } else {
-                alert("Failed to update book");
+                const errorResponse = await response.json();
+                alert(errorResponse.message);
             }
         } catch (error) {
             alert("Error updating book");
@@ -277,7 +276,8 @@ function BookTable({ setBooks, books, token }) {
                                                 );
                                                 alert("Book deleted successfully!");
                                             } else {
-                                                alert("Failed to delete book");
+                                                const errorResponse = await response.json();
+                                                alert(errorResponse.message);
                                             }
                                         } catch (error) {
                                             alert("Error deleting book");
