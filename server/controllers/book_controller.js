@@ -1,7 +1,3 @@
-const books = require('express').Router()
-const db = require('../models')
-const { Book } = db
-
 const { all_book_get, create_book_post, delete_book_post, edit_book_post } = require("../services/book_service");
 
 // GET ALL BOOKS
