@@ -277,6 +277,7 @@ function BookTable({ setBooks, books, token }) {
                                                 );
                                                 alert("Book deleted successfully!");
                                             } else {
+                                                console.log(response);
                                                 alert("Failed to delete book");
                                             }
                                         } catch (error) {

@@ -4,7 +4,6 @@ const app = express();
 const {Sequelize} = require('sequelize');
 const path = require('path');
 const cors = require('cors');
-const {verifyToken} = require('./middleware/auth_middleware')
 
 //CONFIGURATION
 require('dotenv').config();
@@ -13,14 +12,19 @@ app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname, "../build")));
 
+// Controller
 const {all_book_get_controller,create_book_post_controller,delete_book_post_controller,edit_book_post_controller} = require('./controllers/book_controller');
 const {create_user_post_controller,auth_user_controller} = require('./controllers/user_controller');
+
+// Middleware 
 const {verify_jwt_token} = require("./middleware/auth_middleware")
+const {check_scopes} = require("./middleware/rbac_middleware")
+
 
 // FOR BOOKS
 app.use('/api/books/',verify_jwt_token, all_book_get_controller);
 app.post('/api/createbook/',verify_jwt_token, create_book_post_controller);
-app.post('/api/deletebook/',verify_jwt_token, delete_book_post_controller);
+app.post('/api/deletebook/',verify_jwt_token,check_scopes("delete_book"), delete_book_post_controller);
 app.post('/api/editbook/',verify_jwt_token, edit_book_post_controller);
 
 // FOR USERS

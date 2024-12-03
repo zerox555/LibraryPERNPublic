@@ -2,6 +2,7 @@ const db = require('../models')
 const { User } = db
 const argon2 = require('argon2');
 const jwt = require("jsonwebtoken");
+const {getPermissionsByRole} = require("./role_service");
 
 // ADD NEW USER TO DB
 const create_user_post = async (userData) => {
@@ -39,8 +40,8 @@ const auth_user = async (userData) => {
                     {
                         id: user.id,
                         name: userData.name,
-                        roles:user.roles
-                        //TODO: ADD ROLES HERE
+                        roles:user.roles,
+                        permissions: getPermissionsByRole(user.roles)
                     },
                     // secret key value
                     process.env.REACT_APP_JWT_SECRET,
@@ -61,6 +62,8 @@ const auth_user = async (userData) => {
             data: {
                 id: user.id,
                 name: userData.name,
+                roles: user.roles,
+                permissions: getPermissionsByRole(user.roles),
                 token: token,
             }
         })
