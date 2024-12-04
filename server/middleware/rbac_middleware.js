@@ -12,11 +12,21 @@ const check_scopes = (requiredPermission) => {
         const token = authHeader.split(' ')[1];
         // Get permissions from jwt token
         try {
-            const verified = jwt.verify(token,process.env.REACT_APP_JWT_SECRET);
+            const verified = jwt.verify(token, process.env.REACT_APP_JWT_SECRET);
             const permissions = verified.permissions;
-            console.log(permissions);
 
-            if (!permissions.includes(requiredPermission)) {
+
+            // Check for exact match or wildcard match
+            const hasPermission = permissions.some((perm) => {
+                if (perm === requiredPermission) return true; // Exact match
+                if (perm.endsWith('*')) { // Wildcard match
+                    const basePermission = perm.slice(0, -1); // Remove '*' from the end
+                    return requiredPermission.startsWith(basePermission);
+                }
+                return false;
+            });
+
+            if (!hasPermission) {
                 return res.status(403).json({ message: "Access denied: Permission not granted" });
             }
 

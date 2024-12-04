@@ -3,10 +3,7 @@
       {
         "name": "admin",
         "permissions": [
-          "books:write",
-          "books:read",
-          "books:update",
-          "books:delete"
+          "books:*"
         ]
       },
       {
