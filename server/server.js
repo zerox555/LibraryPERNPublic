@@ -22,10 +22,10 @@ const {check_scopes} = require("./middleware/rbac_middleware")
 
 
 // FOR BOOKS
-app.use('/api/books/',verify_jwt_token,check_scopes("read_book"), all_book_get_controller);
-app.post('/api/createbook/',verify_jwt_token,check_scopes("create_book"), create_book_post_controller);
-app.post('/api/deletebook/',verify_jwt_token,check_scopes("delete_book"), delete_book_post_controller);
-app.post('/api/editbook/',verify_jwt_token,check_scopes("update_book"), edit_book_post_controller);
+app.use('/api/books/',verify_jwt_token,check_scopes("books:read"), all_book_get_controller);
+app.post('/api/createbook/',verify_jwt_token,check_scopes("books:write"), create_book_post_controller);
+app.post('/api/deletebook/',verify_jwt_token,check_scopes("books:delete"), delete_book_post_controller);
+app.post('/api/editbook/',verify_jwt_token,check_scopes("books:update"), edit_book_post_controller);
 
 // FOR USERS
 // app.use("/api/users/",all_user_get);

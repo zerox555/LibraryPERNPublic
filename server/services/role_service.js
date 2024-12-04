@@ -14,8 +14,6 @@ const loadRoles = () => {
 
 const getPermissionsByRole = (allRoles) => {
     const roles = loadRoles();
-    console.log(allRoles.length);
-    console.log(allRoles);
     if (allRoles.length > 1) {
         //loop multiple times and get all roles
         let role = [];

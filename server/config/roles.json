@@ -3,16 +3,13 @@
       {
         "name": "admin",
         "permissions": [
-          "create_book",
-          "read_book",
-          "update_book",
-          "delete_book"
+          "books:*"
         ]
       },
       {
         "name": "user",
         "permissions": [
-          "read_book"
+          "books:read"
         ]
       }
     ]
