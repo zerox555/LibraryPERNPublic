@@ -2,7 +2,7 @@ const db = require('../models')
 const { User } = db
 const argon2 = require('argon2');
 const jwt = require("jsonwebtoken");
-const {getPermissionsByRole} = require("./role_service");
+const { getPermissionsByRole } = require("./role_service");
 
 // ADD NEW USER TO DB
 const create_user_post = async (userData) => {
@@ -11,7 +11,7 @@ const create_user_post = async (userData) => {
         const newUser = await User.create({
             name: userData.name,
             password: hash,
-            roles:["user"]
+            roles: ["user"]
         }
         );
         return newUser;
@@ -40,7 +40,7 @@ const auth_user = async (userData) => {
                     {
                         id: user.id,
                         name: userData.name,
-                        roles:user.roles,
+                        roles: user.roles,
                         permissions: getPermissionsByRole(user.roles)
                     },
                     // secret key value
@@ -57,16 +57,23 @@ const auth_user = async (userData) => {
         }
         else {
         }
-        return ({
-            success: authenticated,
-            data: {
-                id: user.id,
-                name: userData.name,
-                roles: user.roles,
-                permissions: getPermissionsByRole(user.roles),
-                token: token,
-            }
-        })
+        return (
+            authenticated ?
+                {
+                    success: authenticated,
+                    data: {
+                        id: user.id,
+                        name: userData.name,
+                        roles: user.roles,
+                        permissions: getPermissionsByRole(user.roles),
+                        token: token,
+                    }
+                } : {
+                    success: authenticated,
+                    data: {
+                    }
+                }
+        )
     } catch (err) {
         console.log(err)
     }

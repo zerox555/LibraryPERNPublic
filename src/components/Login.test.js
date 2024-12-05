@@ -95,7 +95,7 @@ test('Reject login user if incorrect credentials', async () => {
             json: () =>
                 Promise.resolve({
                     success: false,
-                    data: { token: 'mock_token' },
+                    data: {},
                 }),
         })
     );
