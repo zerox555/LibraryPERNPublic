@@ -23,8 +23,6 @@ export default function Login({setLoggedIn,setToken}) {
 
             //get user auth boolean
             const { success, data: { token } } = await response.json();
-            console.log(success);
-            console.log(token);
             if (response.ok && success) {
                 setLoggedIn(true);
                 setToken(token);
@@ -33,9 +31,8 @@ export default function Login({setLoggedIn,setToken}) {
                 alert("Failed to login user");
             }
         } catch (error) {
-
             console.log(error);
-            alert("Error logging in user");
+            alert("Error logging user in");
         }
     };
 
