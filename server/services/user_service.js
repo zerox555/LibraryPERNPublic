@@ -3,6 +3,8 @@ const { User } = db
 const argon2 = require('argon2');
 const jwt = require("jsonwebtoken");
 const { getPermissionsByRole } = require("./role_service");
+const logger = require("../config/logger")
+require('dotenv').config();
 
 // ADD NEW USER TO DB
 const create_user_post = async (userData) => {
@@ -14,6 +16,7 @@ const create_user_post = async (userData) => {
             roles: ["user"]
         }
         );
+        logger.info(`Created User: ${userData.name} with roles: user`);
         return newUser;
     } catch (err) {
         Alert("Error creating user: " + err.message);
@@ -23,6 +26,7 @@ const create_user_post = async (userData) => {
 // AUTHENTICATE USER
 const auth_user = async (userData) => {
     let token;
+    let permissions;
     try {
         let authenticated = false;
         const user = await User.findOne({
@@ -31,41 +35,55 @@ const auth_user = async (userData) => {
             }
         })
 
-        if (user && (await argon2.verify(user.password, userData.password)) ) {
+
+        if (user && (await argon2.verify(user.password, userData.password))) {
             authenticated = true
+            logger.info(`Found User with username: ${user.name}`)
+            logger.info("User authentication success");
             //set jwt token here 
             try {
                 //Creating JWT token
-                token = jwt.sign(
-                    {
-                        id: user.id,
-                        name: userData.name,
-                        roles: user.roles,
-                        permissions: getPermissionsByRole(user.roles)
-                    },
-                    // secret key value
-                    process.env.REACT_APP_JWT_SECRET,
-                    { expiresIn: "1h" }
-                )
+                permissions = getPermissionsByRole(user.roles);
+                logger.debug(`permissions length: ${permissions.length}`);
+                if (permissions.length != 0) {
+                    token = jwt.sign(
+                        {
+                            id: user.id,
+                            name: userData.name,
+                            roles: user.roles,
+                            permissions: permissions
+                        },
+                        // secret key value
+                        process.env.REACT_APP_JWT_SECRET,
+                        { expiresIn: "1h" }
+                    )
+                    logger.debug(`JWT token created: ${token}`);
+                    logger.info("JWT token created");
+                }
+
+
 
             } catch (err) {
-                console.log(err);
+                logger.error("Error creating JWT token");
                 const error =
                     new Error("Error! Something went wrong.");
                 return next(error);
             }
         }
         else {
+            //invalid login
+            logger.warn(`Invalid login detected with username: ${userData.name}`);
         }
+        logger.debug(`User authenticated: ${authenticated}`);
         return (
-            authenticated ?
+            (authenticated && token && permissions.length != 0) ?
                 {
                     success: authenticated,
                     data: {
                         id: user.id,
                         name: userData.name,
                         roles: user.roles,
-                        permissions: getPermissionsByRole(user.roles),
+                        permissions: permissions,
                         token: token,
                     }
                 } : {
@@ -75,7 +93,8 @@ const auth_user = async (userData) => {
                 }
         )
     } catch (err) {
-        console.log(err)
+        logger.error(`Error occured: ${err}`);
+        throw new Error(err);
     }
 };
 

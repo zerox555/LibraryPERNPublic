@@ -22,7 +22,7 @@ export default function Login({setLoggedIn,setToken}) {
             });
 
             //get user auth boolean
-            const { success, data: { token } } = await response.json();
+            const { success, data: { token} } = await response.json();
             if (response.ok && success) {
                 setLoggedIn(true);
                 setToken(token);
