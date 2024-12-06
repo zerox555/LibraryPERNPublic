@@ -31,7 +31,7 @@ const auth_user = async (userData) => {
             }
         })
 
-        if (await argon2.verify(user.password, userData.password)) {
+        if (user && (await argon2.verify(user.password, userData.password)) ) {
             authenticated = true
             //set jwt token here 
             try {
