@@ -155,7 +155,7 @@ test('Shows error logging user in when role retrieval fails', async () => {
             json: () =>
                 Promise.resolve({
                     success: true,
-                    data: { token: '' },
+                    data: { token: '', errorMsg:"Error loading roles: Please contact an admin!" },
                 }),
         })
     );
@@ -180,5 +180,5 @@ test('Shows error logging user in when role retrieval fails', async () => {
 
     expect(loginButton).toBeInTheDocument();
 
-    await waitFor(() => expect(global.alert).toHaveBeenCalledWith("Failed to login user"));
+    await waitFor(() => expect(global.alert).toHaveBeenCalledWith("Error loading roles: Please contact an admin!"));
 });

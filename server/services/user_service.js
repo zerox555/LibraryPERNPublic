@@ -60,9 +60,6 @@ const auth_user = async (userData) => {
                     logger.debug(`JWT token created: ${token}`);
                     logger.info("JWT token created");
                 }
-
-
-
             } catch (err) {
                 logger.error("Error creating JWT token");
                 const error =
@@ -75,23 +72,29 @@ const auth_user = async (userData) => {
             logger.warn(`Invalid login detected with username: ${userData.name}`);
         }
         logger.debug(`User authenticated: ${authenticated}`);
-        return (
-            (authenticated && token && permissions.length != 0) ?
-                {
-                    success: authenticated,
-                    data: {
+
+        if (token && permissions.length > 0) {
+            return {
+                success: authenticated,
+                data: authenticated
+                    ? {
                         id: user.id,
                         name: userData.name,
                         roles: user.roles,
                         permissions: permissions,
                         token: token,
                     }
-                } : {
-                    success: authenticated,
-                    data: {
-                    }
-                }
-        )
+                    : { errorMsg: "Error logging user in!" },
+            };
+        }
+
+        return {
+            success: authenticated,
+            data: {
+                errorMsg: "Error loading roles: Please contact an admin!",
+            },
+        };
+
     } catch (err) {
         logger.error(`Error occured: ${err}`);
         throw new Error(err);
