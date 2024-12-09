@@ -36,18 +36,20 @@ const auth_user = async (userData) => {
             //set jwt token here 
             try {
                 //Creating JWT token
-                token = jwt.sign(
-                    {
-                        id: user.id,
-                        name: userData.name,
-                        roles: user.roles,
-                        permissions: getPermissionsByRole(user.roles)
-                    },
-                    // secret key value
-                    process.env.REACT_APP_JWT_SECRET,
-                    { expiresIn: "1h" }
-                )
-
+                permissions = getPermissionsByRole(user.roles);
+                if (permissions.length != 0) {
+                    token = jwt.sign(
+                        {
+                            id: user.id,
+                            name: userData.name,
+                            roles: user.roles,
+                            permissions: permissions
+                        },
+                        // secret key value
+                        process.env.REACT_APP_JWT_SECRET,
+                        { expiresIn: "1h" }
+                    )
+                }
             } catch (err) {
                 console.log(err);
                 const error =
@@ -57,23 +59,29 @@ const auth_user = async (userData) => {
         }
         else {
         }
-        return (
-            authenticated ?
-                {
-                    success: authenticated,
-                    data: {
+
+        if (token && permissions.length > 0) {
+            return {
+                success: authenticated,
+                data: authenticated
+                    ? {
                         id: user.id,
                         name: userData.name,
                         roles: user.roles,
                         permissions: getPermissionsByRole(user.roles),
                         token: token,
                     }
-                } : {
-                    success: authenticated,
-                    data: {
-                    }
-                }
-        )
+                    : { errorMsg: "Error logging user in!" },
+            };
+        }
+
+        return {
+            success: authenticated,
+            data: {
+                errorMsg: "Error loading roles: Please contact an admin!",
+            },
+        };
+
     } catch (err) {
         console.log(err)
     }
