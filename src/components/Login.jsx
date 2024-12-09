@@ -23,7 +23,7 @@ export default function Login({setLoggedIn,setToken}) {
 
             //get user auth boolean
             const { success, data: { token} } = await response.json();
-            if (response.ok && success) {
+            if (response.ok && success && token) {
                 setLoggedIn(true);
                 setToken(token);
                 alert("User Logged in!");
