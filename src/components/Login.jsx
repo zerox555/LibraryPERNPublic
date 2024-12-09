@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Login.css";
 
-export default function Login({setLoggedIn,setToken}) {
+export default function Login({ setLoggedIn, setToken }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -22,13 +22,14 @@ export default function Login({setLoggedIn,setToken}) {
             });
 
             //get user auth boolean
-            const { success, data: { token} } = await response.json();
+            const { success, data: { token, errorMsg } } = await response.json();
             if (response.ok && success && token) {
                 setLoggedIn(true);
                 setToken(token);
                 alert("User Logged in!");
             } else {
-                alert("Failed to login user");
+                const message = errorMsg || "Failed to login user"; // Use errorMsg if available, otherwise default message
+                alert(message);
             }
         } catch (error) {
             console.log(error);
