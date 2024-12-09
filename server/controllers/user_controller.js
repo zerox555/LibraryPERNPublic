@@ -7,8 +7,8 @@ const create_user_post_controller = async (req, res) => {
     try {
         const { name, password } = req.body;
         const newUser = await create_user_post({ name, password });
-        logger.info("New User creation completed");
-        logger.info(process.env.NODE_ENV);
+        logger.info("New User creation completed @ user_controller");
+        logger.debug(process.env.NODE_ENV);
         res.status(200).send(newUser);
     } catch (err) {
         res.status(500).send("Server error");
@@ -26,7 +26,7 @@ const auth_user_controller = async (req, res) => {
             ? "User authentication failed"
             : "User authentication completed";
         res.status(200).json(validUser);
-        logger.info(msg);
+        logger.info(`${msg} @ user_controller` );
     } catch (err) {
         res.status(500).send("Server error");
         logger.info("User authentication failed");

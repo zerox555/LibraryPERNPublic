@@ -1,10 +1,13 @@
 const jwt = require('jsonwebtoken');
+const logger = require("../config/logger")
+require('dotenv').config();
 
 
 const verify_jwt_token = async (req, res, next) => {
     const authHeader = req.headers.authorization;
   
     if (!authHeader) {
+      logger.warn("Attempted access without token @ auth_middleware");
       return res.status(401).send('Access Denied');
     }
   
@@ -12,9 +15,11 @@ const verify_jwt_token = async (req, res, next) => {
   
     try {
       const verified = jwt.verify(token,process.env.REACT_APP_JWT_SECRET); // Verify the token
-    //   req.user = verified; // Attach user info to the request
+      logger.info(`JWT token: ${token} validated @ auth_middleware`);
+      logger.info(`Proceeding to next stop`);
       next(); // Proceed to the next middleware or route handler
     } catch (error) {
+      logger.warn("Attempted access with invalid token @ auth_middleware");
       res.status(403).send('Invalid Token');
     }
   };
