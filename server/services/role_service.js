@@ -37,8 +37,9 @@ const getPermissionsByRole = (allRoles) => {
                         role.push(currrentRole.permissions)
                     }
                     logger.warn(`Got permission data from multiple roles: ${JSON.stringify(role)}`)
-                    return role ? role.permissions : [];
                 }
+                return role ? role.permissions : [];
+
             } else {
                 const role = roles.find((r) => r.name === allRoles[0]);
                 logger.info(`Got permission data from single role: ${JSON.stringify(role)}`)

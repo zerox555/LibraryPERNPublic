@@ -16,10 +16,10 @@ const create_user_post = async (userData) => {
             roles: ["user"]
         }
         );
-        logger.info(`Created User: ${userData.name} with roles: user`);
+        logger.info(`Created user: ${JSON.stringify(newUser)}`);
         return newUser;
     } catch (err) {
-        Alert("Error creating user: " + err.message);
+        logger.warn("Error creating user: " + err.message);
     }
 };
 
@@ -27,6 +27,8 @@ const create_user_post = async (userData) => {
 const auth_user = async (userData) => {
     let token;
     let permissions;
+    let errorMsg = "";
+
     try {
         let authenticated = false;
         const user = await User.findOne({
@@ -35,19 +37,13 @@ const auth_user = async (userData) => {
             }
         })
 
-
         if (user && (await argon2.verify(user.password, userData.password))) {
+            logger.info(`User: ${user.name} found in database`);
             authenticated = true
-            logger.info(`Found User with username: ${user.name}`)
-            logger.info("User authentication success");
             //set jwt token here 
             try {
                 //Creating JWT token
                 permissions = getPermissionsByRole(user.roles);
-<<<<<<< HEAD
-=======
-                logger.debug(`permissions length: ${permissions.length}`);
->>>>>>> 57d7ad4 (Added logging levels to book,role,user_service)
                 if (permissions.length != 0) {
                     token = jwt.sign(
                         {
@@ -60,62 +56,64 @@ const auth_user = async (userData) => {
                         process.env.REACT_APP_JWT_SECRET,
                         { expiresIn: "1h" }
                     )
-<<<<<<< HEAD
+                    logger.info(`JWT token signed: ${token}`);
                 }
-=======
-                    logger.debug(`JWT token created: ${token}`);
-                    logger.info("JWT token created");
-                }
-
-
-
->>>>>>> 57d7ad4 (Added logging levels to book,role,user_service)
             } catch (err) {
-                logger.error("Error creating JWT token");
+                logger.warn(`Error Occured: ${err}`)
                 const error =
                     new Error("Error! Something went wrong.");
                 return next(error);
             }
         }
         else {
-            //invalid login
-            logger.warn(`Invalid login detected with username: ${userData.name}`);
+            errorMsg = "Error finding user";
+            logger.warn(`User with name: ${userData.name} not found in database`)
+            logger.warn(`User not logged in`);
+            return {
+                success: authenticated,
+                data: {
+                    errorMsg: errorMsg,
+                },
+            };
         }
-<<<<<<< HEAD
 
         if (token && permissions.length > 0) {
+            
+            const userInfo = {
+                id:user.id,
+                name : user.name,
+                roles:user.roles
+            }
+            logger.info(`User logged in: ${JSON.stringify(userInfo)}`);
+            // succesful user login
             return {
                 success: authenticated,
                 data: authenticated
                     ? {
-=======
-        logger.debug(`User authenticated: ${authenticated}`);
-        return (
-            (authenticated && token && permissions.length != 0) ?
-                {
-                    success: authenticated,
-                    data: {
->>>>>>> 57d7ad4 (Added logging levels to book,role,user_service)
                         id: user.id,
                         name: userData.name,
                         roles: user.roles,
                         permissions: permissions,
                         token: token,
+                        errorMsg:""
                     }
-                    : { errorMsg: "Error logging user in!" },
+                    : { errorMsg: errorMsg },
             };
+        } else {
+            errorMsg = "Error loading roles: Please contact an admin!";
+            logger.warn(`Error occured : Invalid token and permissions`);
         }
-
+        // unsuccessful user login
+        logger.warn(`User not logged in`);
         return {
             success: authenticated,
             data: {
-                errorMsg: "Error loading roles: Please contact an admin!",
+                errorMsg: errorMsg,
             },
         };
 
     } catch (err) {
-        logger.error(`Error occured: ${err}`);
-        throw new Error(err);
+        logger.warn(`Error Occured: ${err}`);
     }
 };
 

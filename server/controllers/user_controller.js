@@ -22,8 +22,11 @@ const auth_user_controller = async (req, res) => {
     try {
         const { name, password } = req.body;
         const validUser = await auth_user({ name, password });
+        const msg = (validUser.data.errorMsg)
+            ? "User authentication failed"
+            : "User authentication completed";
         res.status(200).json(validUser);
-        logger.info("User authentication completed");
+        logger.info(msg);
     } catch (err) {
         res.status(500).send("Server error");
         logger.info("User authentication failed");
