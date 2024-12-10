@@ -16,10 +16,19 @@ const create_user_post = async (userData) => {
             roles: ["user"]
         }
         );
-        logger.info(`Created user : ${JSON.stringify(newUser)} @ user_service`);
-        return newUser;
+        const userCreationResponse={
+            newUser,
+            success:true,
+            errorMsg:""
+        }
+        logger.info(`Created user : ${JSON.stringify(newUser,null,2)} @ user_service`);
+        return userCreationResponse;
     } catch (err) {
         logger.warn("Error creating user @ user_service: " + err.message);
+        return {
+            success:false,
+            errorMsg:"Error creating user"
+        }
     }
 };
 
@@ -45,6 +54,7 @@ const auth_user = async (userData) => {
                 //Creating JWT token
                 permissions = getPermissionsByRole(user.roles);
                 if (permissions.length != 0) {
+                    console.log(permissions);
                     token = jwt.sign(
                         {
                             id: user.id,
@@ -60,9 +70,16 @@ const auth_user = async (userData) => {
                 }
             } catch (err) {
                 logger.warn(`Error Occured @ user_service: ${err}`)
-                const error =
-                    new Error("Error! Something went wrong.");
-                return next(error);
+                // const error =
+                //     new Error("Error! Something went wrong.");
+                // return next(error);
+                errorMsg="Error! Something went wrong."
+                return {
+                    success: false,
+                    data: {
+                        errorMsg: errorMsg,
+                    },
+                };
             }
         }
         else {
@@ -70,7 +87,7 @@ const auth_user = async (userData) => {
             logger.warn(`User with name: ${userData.name} not found in database @ user_service`)
             logger.warn(`User not logged in @ user_service`);
             return {
-                success: authenticated,
+                success: false,
                 data: {
                     errorMsg: errorMsg,
                 },
@@ -106,7 +123,7 @@ const auth_user = async (userData) => {
         // unsuccessful user login
         logger.warn(`User not logged in @ user_service`);
         return {
-            success: authenticated,
+            success: false,
             data: {
                 errorMsg: errorMsg,
             },

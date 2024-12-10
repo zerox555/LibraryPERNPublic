@@ -7,9 +7,12 @@ const create_user_post_controller = async (req, res) => {
     try {
         const { name, password } = req.body;
         const newUser = await create_user_post({ name, password });
-        logger.info("New User creation completed @ user_controller");
+        const msg = (newUser.errorMsg)
+            ? "New User creation failed"
+            : "New User creation completed";
         logger.debug(process.env.NODE_ENV);
         res.status(200).send(newUser);
+        logger.info(`${msg} @ user_controller` );
     } catch (err) {
         res.status(500).send("Server error");
         logger.info("New User creation failed");

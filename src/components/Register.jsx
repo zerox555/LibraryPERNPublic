@@ -25,7 +25,7 @@ export default function Register() {
                 body: JSON.stringify(newUser),
             });
 
-            if (response.ok) {
+            if (response.ok && !response.errorMsg) {
                 alert("User created successfully!");
             } else {
                 alert("Failed to create user");
