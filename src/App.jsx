@@ -11,6 +11,7 @@ function App() {
   const [loggedIn,setLoggedIn] = useState(false)
   const [token,setToken] = useState("")
 
+  console.log("This log should appear in the console");
   return (
     <div className="container">
       <Router>

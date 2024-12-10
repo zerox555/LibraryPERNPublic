@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-
+const logger = require("../config/logger")
+require('dotenv').config();
 
 const check_scopes = (requiredPermission) => {
     return (req, res, next) => {
@@ -7,6 +8,7 @@ const check_scopes = (requiredPermission) => {
         const authHeader = req.headers.authorization;
 
         if (!authHeader) {
+            logger.warn("Attempted access without permission header @ rbac_middleware");
             return res.status(401).send('Access Denied');
         }
         const token = authHeader.split(' ')[1];
@@ -14,7 +16,7 @@ const check_scopes = (requiredPermission) => {
         try {
             const verified = jwt.verify(token, process.env.REACT_APP_JWT_SECRET);
             const permissions = verified.permissions;
-
+            logger.debug(`Permissions at rbac: ${permissions}`)
 
             // Check for exact match or wildcard match
             const hasPermission = permissions.some((perm) => {
@@ -27,12 +29,14 @@ const check_scopes = (requiredPermission) => {
             });
 
             if (!hasPermission) {
+                logger.warn("Attempted access without correct permissions @ rbac_middleware");
                 return res.status(403).json({ message: "Access denied: Permission not granted" });
             }
-
+            logger.info(`Correct permissions found: ${requiredPermission}`);
+            logger.info(`Proceeding to next stop`);
             next();
         } catch (err) {
-            console.error(err);
+            logger.error(`Error occured: ${err}`)
             res.status(500).json({ message: "Internal server error" });
         }
     };
