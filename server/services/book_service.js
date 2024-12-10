@@ -8,11 +8,11 @@ require('dotenv').config();
 const all_book_get = async () => {
     try {
         const foundBooks = await Book.findAll();
-        logger.info("Found books from supabase!");
+        logger.info("Found books from supabase @ books_service");
         return foundBooks;
     } catch (err) {
         res.status(500).send("Server error");
-        logger.error(`Error getting all books in books_service: ${err}`);
+        logger.error(`Error getting all books @ books_service: ${err}`);
         throw err;
     }
 };
@@ -26,10 +26,10 @@ const create_book_post = async ({ name, author, year_published }) => {
             year_published
         }
         );
-        logger.info(`Created new book: ${JSON.stringify(newBook)}`);
+        logger.info(`Created new book: ${JSON.stringify(newBook)} @ books_service `);
         return newBook;
     } catch (err) {
-        logger.error(`Error creating new book in books_service: ${err}`);
+        logger.error(`Error creating new book @ books_service: ${err}`);
         throw err;
     }
 }
@@ -49,10 +49,10 @@ const delete_book_post = async (book_id) => {
                 book_id: book_id
             }
         })
-        logger.info(`Deleted a book: ${JSON.stringify(bookSelected)}`);
+        logger.info(`Deleted a book: ${JSON.stringify(bookSelected)} @ books_service `);
         return deleteStatus;
     } catch (err) {
-        logger.error(`Error deleting a book in books_service: ${err}`);
+        logger.error(`Error deleting a book @ books_service: ${err}`);
         throw err;
     }
 }
@@ -69,10 +69,10 @@ const edit_book_post = async ({ name, author, year_published, book_id }) => {
         bookSelected.year_published = year_published;
         //write it back to db
         const editStatus = await bookSelected.save();
-        logger.info(`Edited a book: ${JSON.stringify(oldBook)} -> ${JSON.stringify(bookSelected)}`);
+        logger.info(`Edited a book: ${JSON.stringify(oldBook)} -> ${JSON.stringify(bookSelected)} @ books_service `);
         return editStatus
     } catch (err) {
-        logger.error(`Error editing a book in books_service: ${err}`);
+        logger.error(`Error editing a book @ books_service: ${err}`);
         throw err;
     }
 }

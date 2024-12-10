@@ -10,7 +10,7 @@ const all_book_get_controller = async (req, res) => {
         res.status(200).json(foundBooks)
     } catch (err) {
         res.status(500).send("Server error")
-        logger.error(`Error occured in book_controller: ${err}`)
+        logger.error(`Error occured @ book_controller: ${err}`)
 
     }
 };
@@ -24,7 +24,7 @@ const create_book_post_controller = async (req, res) => {
         res.status(200).json(newBook)
     } catch (err) {
         res.status(500).send("Server error")
-        logger.error(`Error occured in book_controller: ${err}`)
+        logger.error(`Error occured @ book_controller: ${err}`)
 
     }
 }
@@ -43,7 +43,7 @@ const delete_book_post_controller = async (req, res) => {
         res.status(200).json(deleteStatus);
     } catch (err) {
         res.status(500).send("Server error");
-        logger.error(`Error occured in book_controller: ${err}`)
+        logger.error(`Error occured @ book_controller: ${err}`)
 
     }
 };
@@ -57,7 +57,7 @@ const edit_book_post_controller = async (req, res) => {
         res.status(200).json(editStatus)
     } catch (err) {
         res.status(500).send("Server error")
-        logger.error(`Error occured in book_controller: ${err}`)
+        logger.error(`Error occured @ book_controller: ${err}`)
     }
 }
 

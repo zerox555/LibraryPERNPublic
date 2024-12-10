@@ -16,10 +16,10 @@ const create_user_post = async (userData) => {
             roles: ["user"]
         }
         );
-        logger.info(`Created user: ${JSON.stringify(newUser)}`);
+        logger.info(`Created user : ${JSON.stringify(newUser)} @ user_service`);
         return newUser;
     } catch (err) {
-        logger.warn("Error creating user: " + err.message);
+        logger.warn("Error creating user @ user_service: " + err.message);
     }
 };
 
@@ -38,7 +38,7 @@ const auth_user = async (userData) => {
         })
 
         if (user && (await argon2.verify(user.password, userData.password))) {
-            logger.info(`User: ${user.name} found in database`);
+            logger.info(`User: ${user.name} found in database @ user_service`);
             authenticated = true
             //set jwt token here 
             try {
@@ -56,19 +56,19 @@ const auth_user = async (userData) => {
                         process.env.REACT_APP_JWT_SECRET,
                         { expiresIn: "1h" }
                     )
-                    logger.info(`JWT token signed: ${token}`);
+                    logger.info(`JWT token signed: ${token} @ user_service`);
                 }
             } catch (err) {
-                logger.warn(`Error Occured: ${err}`)
+                logger.warn(`Error Occured @ user_service: ${err}`)
                 const error =
                     new Error("Error! Something went wrong.");
                 return next(error);
             }
         }
         else {
-            errorMsg = "Error finding user";
-            logger.warn(`User with name: ${userData.name} not found in database`)
-            logger.warn(`User not logged in`);
+            errorMsg = "Error finding user @ user_service";
+            logger.warn(`User with name: ${userData.name} not found in database @ user_service`)
+            logger.warn(`User not logged in @ user_service`);
             return {
                 success: authenticated,
                 data: {
@@ -84,7 +84,7 @@ const auth_user = async (userData) => {
                 name : user.name,
                 roles:user.roles
             }
-            logger.info(`User logged in: ${JSON.stringify(userInfo)}`);
+            logger.info(`User logged in: ${JSON.stringify(userInfo,null,3)} @ user_service`);
             // succesful user login
             return {
                 success: authenticated,
@@ -100,11 +100,11 @@ const auth_user = async (userData) => {
                     : { errorMsg: errorMsg },
             };
         } else {
-            errorMsg = "Error loading roles: Please contact an admin!";
-            logger.warn(`Error occured : Invalid token and permissions`);
+            errorMsg = "Error loading roles @ user_service: Please contact an admin!";
+            logger.warn(`Error occured @ user_service: Invalid token and permissions`);
         }
         // unsuccessful user login
-        logger.warn(`User not logged in`);
+        logger.warn(`User not logged in @ user_service`);
         return {
             success: authenticated,
             data: {
@@ -113,7 +113,7 @@ const auth_user = async (userData) => {
         };
 
     } catch (err) {
-        logger.warn(`Error Occured: ${err}`);
+        logger.warn(`Error Occured @ user_service: ${err}`);
     }
 };
 

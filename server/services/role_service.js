@@ -11,10 +11,10 @@ const loadRoles = () => {
             const rolesFile = path.join(__dirname, '../config/roles.json');
             const data = fs.readFileSync(rolesFile, 'utf8');
             rolesData = JSON.parse(data).roles;
-            logger.info(`Got Roles data from roles.json: ${JSON.stringify(rolesData)}`)
+            logger.info(`Got Roles data from roles.json: ${JSON.stringify(rolesData,null,3)} @ role_service`)
         }
     } catch (err) {
-        logger.error(`Error loading roles in loadRoles function: ${err}`);
+        logger.error(`Error loading roles @ role_service: ${err}`);
     }
 
     return rolesData;
@@ -36,13 +36,13 @@ const getPermissionsByRole = (allRoles) => {
                     } else {
                         role.push(currrentRole.permissions)
                     }
-                    logger.warn(`Got permission data from multiple roles: ${JSON.stringify(role)}`)
+                    logger.warn(`Got permission data from multiple roles: ${JSON.stringify(role,null,3)} @ role_service`)
                 }
                 return role ? role.permissions : [];
 
             } else {
                 const role = roles.find((r) => r.name === allRoles[0]);
-                logger.info(`Got permission data from single role: ${JSON.stringify(role)}`)
+                logger.info(`Got permission data from single role: ${JSON.stringify(role,null,3)} @ role_service`)
                 return role ? role.permissions : [];
             }
         } else {
@@ -51,7 +51,7 @@ const getPermissionsByRole = (allRoles) => {
         }
 
     } catch (err) {
-        logger.error(`Error getting permissions in getPermissionsByRole: ${err}`);
+        logger.error(`Error getting permissions @ role_service: ${err}`);
     }
 
 };
