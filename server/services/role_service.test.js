@@ -1,7 +1,7 @@
 const fs = require('fs');
 const logger = require("../config/logger")
 // const { setRolesData, getPermissionsByRole, loadRoles } = require("./role_service")
-const { getPermissionsByRole , loadRoles,setRolesData } = require("./role_service");
+const { getPermissionsByRole, loadRoles, setRolesData } = require("./role_service");
 require('dotenv').config();
 
 jest.mock("fs", () => ({
@@ -46,7 +46,7 @@ describe("getPermissionsByRole function", () => {
     test("should return permissions for a single role", () => {
         // mocked load roles fn
         const allRoles = ["admin"];
-        const result = getPermissionsByRole(allRoles,dummyAllRoles);
+        const result = getPermissionsByRole(allRoles, jest.fn().mockReturnValue(dummyAllRoles));
 
         // expect(loadRoles).toHaveBeenCalled();
         expect(logger.info).toHaveBeenCalledWith(
@@ -55,37 +55,33 @@ describe("getPermissionsByRole function", () => {
         expect(result).toEqual(["books:*"]);
     });
 
-    // test("should return permissions for multiple roles without duplicates", () => {
+    test("should return permissions for multiple roles without duplicates", () => {
 
-    //     const allRoles = ["user", "test"];
-    //     const result = getPermissionsByRole(allRoles);
+        const allRoles = ["user", "test"];
+        const result = getPermissionsByRole(allRoles,jest.fn().mockReturnValue(dummyAllRoles));
 
-    //     // expect(loadRoles).toHaveBeenCalled();
-    //     expect(logger.warn).toHaveBeenCalledWith(
-    //         expect.stringContaining("Got permission data from multiple roles")
-    //     );
-    //     expect(result).toEqual([["books:delete"], ["books:read"]]); // Verify nested permissions array
-    // });
+        // expect(loadRoles).toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining("Multiple roles detected: ")
+        );
+        expect(result).toEqual([]); // Verify nested permissions array
+    });
 
-    // test("should handle loadRoles failure gracefully", () => {
-    //     loadRoles.mockImplementation(() => {
-    //         throw new Error("Error loading roles");
-    //     });
+    test("should handle loadRoles failure gracefully", () => {
 
-    //     const allRoles = ["admin"];
-    //     const result = getPermissionsByRole(allRoles);
+        const allRoles = ["admin"];
+        const result = getPermissionsByRole(allRoles,jest.fn().mockImplementation(()=>{throw new Error("Error loading roles");}));
 
-    //     expect(loadRoles).toHaveBeenCalled();
-    //     expect(logger.error).toHaveBeenCalledWith(
-    //         expect.stringContaining("Error getting permissions @ role_service")
-    //     );
-    //     expect(result).toBeUndefined(); // Error handling doesn't return a value
-    // });
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining("Error getting permissions @ role_service")
+        );
+        expect(result).toBeUndefined(); // Error handling doesn't return a value
+    });
 
     test("should return empty array for invalid roles", () => {
 
         const allRoles = ["admind"];
-        const result = getPermissionsByRole(allRoles,dummyAllRoles);
+        const result = getPermissionsByRole(allRoles, jest.fn().mockReturnValue(dummyAllRoles));
 
         expect(result).toEqual([]);
     });

@@ -24,12 +24,13 @@ const setRolesData = (roles) => {
     rolesData = roles
 }
 
-const getPermissionsByRole = (allRoles, rolesTest = []) => {
+const getPermissionsByRole = (allRoles, mockLoadRoleCallback=null) => {
     try {
         let roles;
-        if (rolesTest.length != 0) {
-            roles = rolesTest;
-        } else {
+        // use mock callback
+        if(mockLoadRoleCallback){
+            roles = mockLoadRoleCallback()
+        }else{
             roles = loadRoles();
         }
         console.log(roles);
