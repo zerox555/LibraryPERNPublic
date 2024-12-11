@@ -9,9 +9,12 @@ const all_book_get = async () => {
     try {
         const foundBooks = await Book.findAll();
         logger.info("Found books from supabase @ books_service");
+        console.log("end reached all_book_get");
+        console.log(foundBooks);
+
         return foundBooks;
     } catch (err) {
-        res.status(500).send("Server error");
+        // res.status(500).send("Server error");
         logger.error(`Error getting all books @ books_service: ${err}`);
         throw err;
     }

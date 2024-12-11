@@ -31,19 +31,10 @@ const getPermissionsByRole = (allRoles) => {
         logger.trace(`allRoles length: ${allRoles.length}`)
         if (roles) {
             if (allRoles.length > 1) {
-                //loop multiple times and get all roles
-                let role = [];
-                for (let i = 0; i < allRoles.length; i++) {
-                    const currrentRole = roles.find((r) => r.name === allRoles[i]);
-                    // Check if element exists
-                    if (role.includes(currrentRole.permissions)) {
-                        // Skip
-                    } else {
-                        role.push(currrentRole.permissions)
-                    }
-                    logger.warn(`Got permission data from multiple roles: ${JSON.stringify(role, null, 3)} @ role_service`)
-                }
-                return role ? role.permissions : [];
+                // currently no multiple role support
+                // console.log(role);
+                logger.warn(`Multiple roles detected: ${JSON.stringify(allRoles, null, 3)} @ role_service`)
+                return [];
 
             } else {
                 const role = roles.find((r) => r.name === allRoles[0]);
@@ -51,6 +42,7 @@ const getPermissionsByRole = (allRoles) => {
                 return role ? role.permissions : [];
             }
         } else {
+            console.log("Debug reached");
             logger.debug("returned []");
             return [];
         }

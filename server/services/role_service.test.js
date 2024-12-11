@@ -1,25 +1,23 @@
-const fs = require('fs');
+// const fs = require('fs');
 const logger = require("../config/logger")
-const { setRolesData, getPermissionsByRole, loadRoles } = require("./role_service")
+// const { setRolesData, getPermissionsByRole, loadRoles } = require("./role_service")
 
 require('dotenv').config();
 
 jest.mock("fs", () => ({
-    readFileSync: jest.fn().mockReturnValue(JSON.stringify({
-        roles: [
-            { name: 'admin', permissions: ['books:*'] },
-            { name: 'user', permissions: ['books:read'] },
-            { name: "hehe", permissions: ["books:delete"] }
-        ]
-    }))
+    readFileSync: jest.fn()
 }));
 jest.mock("../config/logger");
+// Mock role_service, including loadRoles
 jest.mock("./role_service", () => {
     const originalRoleService = jest.requireActual("./role_service");
-    console.log('Mocking loadRoles');
     return {
-        ...originalRoleService,
-        loadRoles: jest.fn().mockReturnValue(),
+        ...originalRoleService,  // Keep the original implementation for other methods if needed
+        loadRoles: jest.fn().mockReturnValue([  // Directly mock loadRoles
+            { name: 'admin', permissions: ['books:*'] },
+            { name: 'user', permissions: ['books:read'] },
+            { name: 'test3', permissions: ['books:read', 'books:delete'] }
+        ]),  // Provide mocked roles directly here
     };
 });
 
@@ -40,6 +38,7 @@ describe("getPermissionsByRole function", () => {
     })
 
     test("should return permissions for a single role", () => {
+        const { getPermissionsByRole } = require("./role_service");
         // mocked load roles fn
         const allRoles = ["admin"];
         const result = getPermissionsByRole(allRoles);
@@ -51,28 +50,27 @@ describe("getPermissionsByRole function", () => {
         expect(result).toEqual(["books:*"]);
     });
 
-    test("should return permissions for multiple roles without duplicates", () => {
+    // test("should return permissions for multiple roles without duplicates", () => {
 
-        const allRoles = ["admin", "user"];
-        const result = getPermissionsByRole(allRoles);
-
-        // expect(loadRoles).toHaveBeenCalled();
-        expect(logger.warn).toHaveBeenCalledWith(
-            expect.stringContaining("Got permission data from multiple roles")
-        );
-        expect(result).toEqual([["*"], ["read"]]); // Verify nested permissions array
-    });
-
-    // test("should return empty array when no roles found", () => {
-    //     loadRoles.mockReturnValue([]);
-
-    //     const allRoles = ["admin"];
+    //     const allRoles = ["user", "test"];
     //     const result = getPermissionsByRole(allRoles);
 
-    //     expect(loadRoles).toHaveBeenCalled();
-    //     expect(logger.debug).toHaveBeenCalledWith("returned []");
-    //     expect(result).toEqual([]);
+    //     // expect(loadRoles).toHaveBeenCalled();
+    //     expect(logger.warn).toHaveBeenCalledWith(
+    //         expect.stringContaining("Got permission data from multiple roles")
+    //     );
+    //     expect(result).toEqual([["books:delete"], ["books:read"]]); // Verify nested permissions array
     // });
+
+    test("should return empty array when no roles found", () => {
+        loadRoles.mockReturnValue([]);
+
+        const allRoles = ["admin"];
+        const result = getPermissionsByRole(allRoles);
+
+        expect(logger.debug).toHaveBeenCalledWith("returned []");
+        expect(result).toEqual([]);
+    });
 
     // test("should handle loadRoles failure gracefully", () => {
     //     loadRoles.mockImplementation(() => {
