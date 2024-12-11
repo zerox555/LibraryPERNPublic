@@ -24,9 +24,14 @@ const setRolesData = (roles) => {
     rolesData = roles
 }
 
-const getPermissionsByRole = (allRoles) => {
+const getPermissionsByRole = (allRoles, rolesTest = []) => {
     try {
-        const roles = loadRoles();
+        let roles;
+        if (rolesTest.length != 0) {
+            roles = rolesTest;
+        } else {
+            roles = loadRoles();
+        }
         console.log(roles);
         logger.trace(`allRoles length: ${allRoles.length}`)
         if (roles) {
@@ -53,8 +58,10 @@ const getPermissionsByRole = (allRoles) => {
 
 };
 
+
+
 module.exports = {
     loadRoles,
     getPermissionsByRole,
-    setRolesData
+    setRolesData,
 };
