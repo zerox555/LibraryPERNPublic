@@ -5,18 +5,7 @@ require('dotenv').config();
 const check_scopes = (requiredPermission) => {
     return (req, res, next) => {
 
-        // const authHeader = req.headers.authorization;
-        let authHeader;
-        if (!('headers' in req)) {
-            authHeader = "";
-        } else {
-            if (!('authorization' in req.headers)) {
-                req.headers.authorization = "";
-                authHeader=""
-            }else{
-                authHeader = req.headers.authorization
-            }
-        }
+        const authHeader = req.headers?.authorization || "";
 
         if (!authHeader) {
             logger.warn("Attempted access without permission header @ rbac_middleware");
