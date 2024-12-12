@@ -5,7 +5,18 @@ require('dotenv').config();
 const check_scopes = (requiredPermission) => {
     return (req, res, next) => {
 
-        const authHeader = req.headers.authorization;
+        // const authHeader = req.headers.authorization;
+        let authHeader;
+        if (!('headers' in req)) {
+            authHeader = "";
+        } else {
+            if (!('authorization' in req.headers)) {
+                req.headers.authorization = "";
+                authHeader=""
+            }else{
+                authHeader = req.headers.authorization
+            }
+        }
 
         if (!authHeader) {
             logger.warn("Attempted access without permission header @ rbac_middleware");
@@ -15,6 +26,7 @@ const check_scopes = (requiredPermission) => {
         // Get permissions from jwt token
         try {
             const verified = jwt.verify(token, process.env.REACT_APP_JWT_SECRET);
+            console.log(verified);
             const permissions = verified.permissions;
             logger.debug(`Permissions at rbac: ${permissions}`)
 
@@ -36,6 +48,7 @@ const check_scopes = (requiredPermission) => {
             logger.info(`Proceeding to next stop`);
             next();
         } catch (err) {
+            console.log(`err occured ${err}`)
             logger.error(`Error occured: ${err}`)
             res.status(500).json({ message: "Internal server error" });
         }
