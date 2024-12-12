@@ -5,102 +5,77 @@ require('dotenv').config();
 
 jest.mock("../config/logger");
 jest.mock('jsonwebtoken', () => ({
-    verify: jest.fn(), // Ensure verify is a mock function
+    verify: jest.fn(),
 }));
 
+describe("verify_jwt_token function", () => {
+    let next, res;
 
-describe("Verify JWT token function", () => {
-
-
+    beforeEach(() => {
+        next = jest.fn();
+        res = {
+            send: jest.fn(),
+            status: jest.fn(() => res),
+            json: jest.fn()
+        };
+    });
 
     afterEach(() => {
-        jest.restoreAllMocks()
-        jest.clearAllMocks()
-    })
+        jest.restoreAllMocks();
+        jest.clearAllMocks();
+    });
 
-    const next = jest.fn();
+    test("should fail if header is not present", async () => {
+        const req = {};
 
-    const res = {
-        send: jest.fn(),
-        status: jest.fn(() => res),
-        json: jest.fn()
-    };
-
-
-    // fail if header not present
-    test("should fail is header is not present", async () => {
-        // request with no header
-        const req = {
-        };
-
-        const response = await verify_jwt_token(req, res, next);
+        await verify_jwt_token(req, res, next);
 
         expect(logger.warn).toHaveBeenCalledWith(
             expect.stringContaining("Attempted access without header @ auth_middleware")
         );
-        // Check that res.status was called with 401
         expect(res.status).toHaveBeenCalledWith(401);
-
-        // Check that res.send was called with 'Access Denied'
-        expect(res.send).toHaveBeenCalledWith('Access Denied');
-
-        // Ensure next() was not called
+        expect(res.send).toHaveBeenCalledWith("Access Denied");
         expect(next).not.toHaveBeenCalled();
-    })
+    });
 
-    // fail if header present but jwt token verify fails
-    test("should fail is header present but jwt verify fails", async () => {
-        // request with header
+    test("should fail if jwt.verify throws an error", async () => {
         const req = {
             headers: {
                 authorization: "Bearer tokenmock"
             }
         };
-
 
         jwt.verify.mockImplementationOnce(() => {
             throw new Error('Error');
         });
 
-        const response = await verify_jwt_token(req, res, next);
+        await verify_jwt_token(req, res, next);
 
         expect(logger.warn).toHaveBeenCalledWith(
             expect.stringContaining("Attempted access with invalid token @ auth_middleware")
         );
-        // Check that res.status was called with 403
         expect(res.status).toHaveBeenCalledWith(403);
-
-        // Check that res.send was called with 'Access Denied'
-        expect(res.send).toHaveBeenCalledWith('Invalid Token');
-
-        // Ensure next() was not called
+        expect(res.send).toHaveBeenCalledWith("Invalid Token");
         expect(next).not.toHaveBeenCalled();
-    })
+    });
 
-    // success if header and jwt present 
-    test("should succeed is header present and jwt verify succeeds", async () => {
-        // request with header
+    test("should succeed if jwt.verify validates the token", async () => {
         const req = {
             headers: {
                 authorization: "Bearer tokenmock"
             }
         };
 
+        jwt.verify.mockImplementationOnce(() => ({}));
 
-        jwt.verify.mockImplementationOnce(() => {
-            return {};
-        });
+        await verify_jwt_token(req, res, next);
 
-        const response = await verify_jwt_token(req, res, next);
-
-        expect(logger.info.mock.calls[0][0]).toBe(
+        expect(logger.info).toHaveBeenCalledWith(
             "JWT token: tokenmock validated @ auth_middleware"
         );
-        expect(logger.info.mock.calls[1][0]).toBe(
+        expect(logger.info).toHaveBeenCalledWith(
             "Proceeding to next stop"
         );
-
-        // Ensure next() was not called
         expect(next).toHaveBeenCalled();
-    })
-})
+    });
+});
