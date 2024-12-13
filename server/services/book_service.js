@@ -2,6 +2,7 @@ const books = require('express').Router()
 const db = require('../models')
 const { Book } = db
 const logger = require("../config/logger")
+const AppError = require("../appError")
 require('dotenv').config();
 
 // GET ALL BOOKS
@@ -76,7 +77,8 @@ const edit_book_post = async ({ name, author, year_published, book_id }) => {
         return editStatus
     } catch (err) {
         logger.error(`Error editing a book @ books_service: ${err}`);
-        throw err;
+        throw new AppError('DB_ERROR', 401, 'Invalid book details', 'INTERNAL_SERVER_ERROR');
+        // throw err;
     }
 }
 
