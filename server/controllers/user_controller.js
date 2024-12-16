@@ -3,7 +3,7 @@ const logger = require("../config/logger")
 require('dotenv').config();
 
 // ADD NEW USER
-const create_user_post_controller = async (req, res) => {
+const create_user_post_controller = async (req, res,next) => {
     try {
         const { name, password } = req.body;
         const newUser = await create_user_post({ name, password });
@@ -14,9 +14,10 @@ const create_user_post_controller = async (req, res) => {
         res.status(200).send(newUser);
         logger.info(`${msg} @ user_controller` );
     } catch (err) {
-        res.status(500).send("Server error");
+        // res.status(500).send("Server error");
         logger.info("New User creation failed");
         logger.error(err)
+        next(err)
     }
 }
 

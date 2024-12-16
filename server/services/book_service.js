@@ -77,7 +77,7 @@ const edit_book_post = async ({ name, author, year_published, book_id }) => {
         return editStatus
     } catch (err) {
         logger.error(`Error editing a book @ books_service: ${err}`);
-        throw new AppError('DB_ERROR', 401, 'Invalid book details', 'INTERNAL_SERVER_ERROR');
+        throw new AppError('DB_ERROR', 401, 'Invalid book details');
         // throw err;
     }
 }

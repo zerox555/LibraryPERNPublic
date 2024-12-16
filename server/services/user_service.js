@@ -3,12 +3,17 @@ const { User } = db
 const argon2 = require('argon2');
 const jwt = require("jsonwebtoken");
 const { getPermissionsByRole } = require("./role_service");
-const logger = require("../config/logger")
+const logger = require("../config/logger");
+const AppError = require("../appError");
 require('dotenv').config();
 
 // ADD NEW USER TO DB
 const create_user_post = async (userData) => {
     try {
+        // Validite user credentials
+        if (!(userData.name && userData.password)){
+            throw new AppError('USER_CREATION_FAILED', 400, 'Username and password cannot be empty!');
+        }
         const hash = await argon2.hash(userData.password);
         const newUser = await User.create({
             name: userData.name,
@@ -25,10 +30,19 @@ const create_user_post = async (userData) => {
         return userCreationResponse;
     } catch (err) {
         logger.warn("Error creating user @ user_service: " + err.message);
-        return {
-            success:false,
-            errorMsg:"Error creating user"
-        }
+        // If is db problem
+        throw new AppError('USER_CREATION_FAILED', 500, 'Cannot create user at this time, please try again later');
+
+        // return {
+        //     success: false,
+        //     error: {
+        //       errorCode: "USER_CREATION_FAILED",
+        //       message: "Cannot create user at this time, please try again later",
+        //       httpStatus: 500,
+        //     },
+        //     timestamp: "2024-12-16T12:34:56Z"
+        //   }
+
     }
 };
 
