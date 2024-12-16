@@ -4,34 +4,36 @@ const AppError = require("../appError")
 require('dotenv').config();
 
 // GET ALL BOOKS
-const all_book_get_controller = async (req, res) => {
+const all_book_get_controller = async (req, res,next) => {
     try {
         const foundBooks = await all_book_get();
         logger.info(`Find all books transaction done @ book_controller`);
         res.status(200).json(foundBooks)
     } catch (err) {
-        res.status(500).send("Server error")
+        next(err)
+        // res.status(500).send("Server error")
         logger.error(`Error occured @ book_controller: ${err}`)
 
     }
 };
 
 // ADD NEW BOOK
-const create_book_post_controller = async (req, res) => {
+const create_book_post_controller = async (req, res,next) => {
     try {
         const { name, author, year_published } = req.body;
         const newBook = await create_book_post({ name, author, year_published });
         logger.info(`Create book transaction done @ book_controller`);
         res.status(200).json(newBook)
     } catch (err) {
-        res.status(500).send("Server error")
+        next(err)
+        // res.status(500).send("Server error")
         logger.error(`Error occured @ book_controller: ${err}`)
 
     }
 }
 
 // DELETE A BOOK
-const delete_book_post_controller = async (req, res) => {
+const delete_book_post_controller = async (req, res,next) => {
     try {
         const { book_id } = req.body;
 
@@ -43,7 +45,8 @@ const delete_book_post_controller = async (req, res) => {
         logger.info(`Delete book transaction done @ book_controller`);
         res.status(200).json(deleteStatus);
     } catch (err) {
-        res.status(500).send("Server error");
+        next(err);
+        // res.status(500).send("Server error");
         logger.error(`Error occured @ book_controller: ${err}`)
 
     }

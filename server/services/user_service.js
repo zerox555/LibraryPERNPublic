@@ -11,7 +11,7 @@ require('dotenv').config();
 const create_user_post = async (userData) => {
     try {
         // Validite user credentials
-        if (!(userData.name && userData.password)){
+        if (!(userData.name && userData.password)) {
             throw new AppError('USER_CREATION_FAILED', 400, 'Username and password cannot be empty!');
         }
         const hash = await argon2.hash(userData.password);
@@ -21,17 +21,27 @@ const create_user_post = async (userData) => {
             roles: ["user"]
         }
         );
-        const userCreationResponse={
+        const userCreationResponse = {
             newUser,
-            success:true,
+            success: true,
         }
-        logger.info(`Created user : ${JSON.stringify(newUser,null,2)} @ user_service`);
+        logger.info(`Created user : ${JSON.stringify(newUser, null, 2)} @ user_service`);
         return userCreationResponse;
-    } catch (err) {
-        logger.warn("Error creating user @ user_service: " + err.message);
-        // If is db problem
-        throw new AppError('USER_CREATION_FAILED', 500, 'Cannot create user at this time, please try again later');
     }
+    catch (err) {
+        // Catch and log the error for further processing by the middleware
+        if (err instanceof AppError) {
+            logger.error(`AppError encountered: ${err.message} (Code: ${err.code}, Status: ${err.statusCode})`);
+            throw err; // If it's already an AppError, throw it
+        } else {
+            // If it's an unexpected error, wrap it into AppError and log it
+            logger.warn("Error creating user @ user_service: " + err.message);
+            // If is db problem
+            throw new AppError('USER_CREATION_FAILED', 500, 'Cannot create user at this time, please try again later');
+        }
+    }
+
+
 };
 
 // AUTHENTICATE USER

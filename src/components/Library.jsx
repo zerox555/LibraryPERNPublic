@@ -22,7 +22,7 @@ export default function Library({ token }) {
                 },
             });
             const json = await response.json()
-            setBooks(json)
+            setBooks(json.data)
             setLoading(1)
         }
         fetchData()
