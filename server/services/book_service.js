@@ -15,15 +15,19 @@ const all_book_get = async () => {
 
         return foundBooks;
     } catch (err) {
-        // res.status(500).send("Server error");
         logger.error(`Error getting all books @ books_service: ${err}`);
-        throw err;
+        throw new AppError('BOOK_NOT_FOUND', 500, 'There was a problem getting the books, please try again later');
     }
 };
 
 // ADD NEW BOOK
 const create_book_post = async ({ name, author, year_published }) => {
     try {
+        // validate client input
+        if (!(name && author && year_published)){
+        throw new AppError('BOOK_CREATION_FAILED', 400, 'Book details cannot be empty');
+
+        }
         const newBook = await Book.create({
             name,
             author,
@@ -34,7 +38,8 @@ const create_book_post = async ({ name, author, year_published }) => {
         return newBook;
     } catch (err) {
         logger.error(`Error creating new book @ books_service: ${err}`);
-        throw err;
+        throw new AppError('BOOK_CREATION_FAILED', 500, 'There was a problem creating book, please try again later');
+
     }
 }
 
