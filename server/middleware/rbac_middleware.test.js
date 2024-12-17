@@ -1,131 +1,141 @@
 const jwt = require('jsonwebtoken');
-const logger = require("../config/logger");
 const { check_scopes } = require('./rbac_middleware');
-require('dotenv').config();
+const logger = require('../config/logger');
+const AppError = require('../appError');
 
-jest.mock("../config/logger");
-jest.mock('jsonwebtoken', () => ({
-    verify: jest.fn(),
+// Mocking the logger to prevent actual log calls during tests
+jest.mock('../config/logger', () => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
 }));
 
-describe("check_scopes function", () => {
-    let next, res;
+// Mocking jsonwebtoken module
+jest.mock('jsonwebtoken', () => ({
+    sign: jest.fn(),
+    verify: jest.fn(),
+    JsonWebTokenError: jest.fn().mockReturnValue({
+        name: 'JsonWebTokenError',
+    }),
+    TokenExpiredError: jest.fn().mockReturnValue({
+        name: 'TokenExpiredError',
+    }),
+}));
+
+describe('check_scopes Middleware', () => {
+    let req, res, next;
+    const secretKey = process.env.REACT_APP_JWT_SECRET || 'test-secret-key';
 
     beforeEach(() => {
+        req = { headers: {} };
+        res = {};
         next = jest.fn();
-        res = {
-            send: jest.fn(),
-            status: jest.fn(() => res),
-            json: jest.fn()
-        };
-    });
-
-    afterEach(() => {
-        jest.restoreAllMocks();
         jest.clearAllMocks();
     });
 
-    test("should fail if no header", () => {
-        const req = {};
-        const middleware = check_scopes("books:read");
-
-        middleware(req, res, next);
-
-        expect(logger.warn).toHaveBeenCalledWith(
-            expect.stringContaining("Attempted access without permission header @ rbac_middleware")
+    it('should return HEADER_MISSING error when Authorization header is absent', async () => {
+        await check_scopes('books:read')(req, res, next);
+        expect(next).toHaveBeenCalledWith(
+            expect.objectContaining({
+                errorCode: 'HEADER_MISSING',
+                statusCode: 400,
+                message: 'Cannot access at this time, please try again later',
+            })
         );
-        expect(res.status).toHaveBeenCalledWith(401);
-        expect(res.send).toHaveBeenCalledWith("Access Denied");
-        expect(next).not.toHaveBeenCalled();
     });
 
-    test("should fail if no authorization header", () => {
-        const req = { headers: {} };
-        const middleware = check_scopes("books:read");
+    it('should return INVALID_TOKEN error when jwt.verify throws JsonWebTokenError', async () => {
+        req.headers.authorization = 'Bearer invalidToken';
 
-        middleware(req, res, next);
-
-        expect(logger.warn).toHaveBeenCalledWith(
-            expect.stringContaining("Attempted access without permission header @ rbac_middleware")
-        );
-        expect(res.status).toHaveBeenCalledWith(401);
-        expect(res.send).toHaveBeenCalledWith("Access Denied");
-        expect(next).not.toHaveBeenCalled();
-    });
-
-    test("should fail if jwt.verify fails", () => {
-        const req = { headers: { authorization: "Bearer invalidtoken" } };
-        jwt.verify.mockImplementationOnce(() => {
-            throw new Error("Error");
+        // Mock jwt.verify to throw JsonWebTokenError
+        jwt.verify.mockImplementation(() => {
+            throw new jwt.JsonWebTokenError('invalid signature');
         });
-        const middleware = check_scopes("books:read");
 
-        middleware(req, res, next);
+        await check_scopes('books:read')(req, res, next);
 
-        expect(jwt.verify).toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining("Error occured:")
+        expect(next).toHaveBeenCalledWith(
+            expect.objectContaining({
+                errorCode: 'INVALID_TOKEN',
+                statusCode: 401,
+                message: 'Invalid token provided',
+            })
         );
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.json).toHaveBeenCalledWith({ message: "Internal server error" });
-        expect(next).not.toHaveBeenCalled();
     });
 
-    test("should fail if user lacks permission", () => {
-        const req = { headers: { authorization: "Bearer validtoken" } };
-        jwt.verify.mockReturnValueOnce({ permissions: ["books:read"] });
-        const middleware = check_scopes("books:write");
+    it('should return INSUFFICIENT_PERMISSIONS error when permissions do not match', async () => {
+         // mock user has read permissions on books
+         jwt.verify.mockImplementationOnce(() => {
+            return {
+                permissions: [
+                    "books:read"
+                ]
+            };
+        });
+        req.headers.authorization = `Bearer mocktoken`;
 
-        middleware(req, res, next);
+        await check_scopes('books:write')(req, res, next);
 
-        expect(jwt.verify).toHaveBeenCalled();
-        expect(logger.debug).toHaveBeenCalledWith(
-            expect.stringContaining("Permissions at rbac:")
+        expect(next).toHaveBeenCalledWith(
+            expect.objectContaining({
+                errorCode: 'INSUFFICIENT_PERMISSIONS',
+                statusCode: 403,
+                message: 'Cannot access at this time, please try again later',
+            })
         );
-        expect(logger.warn).toHaveBeenCalledWith(
-            expect.stringContaining("Attempted access without correct permissions @ rbac_middleware")
-        );
-        expect(res.json).toHaveBeenCalledWith({ message: "Access denied: Permission not granted" });
-        expect(next).not.toHaveBeenCalled();
     });
 
-    test("should succeed if user has specific permission", () => {
-        const req = { headers: { authorization: "Bearer validtoken" } };
-        jwt.verify.mockReturnValueOnce({ permissions: ["books:read"] });
-        const middleware = check_scopes("books:read");
+    it('should call next with user payload when user has correct permissions', async () => {
+        // mock user has read permissions on books
+        jwt.verify.mockImplementationOnce(() => {
+            return {
+                permissions: [
+                    "books:read"
+                ]
+            };
+        });
+        req.headers.authorization = `Bearer mockToken`;
 
-        middleware(req, res, next);
+        await check_scopes('books:read')(req, res, next);
 
-        expect(jwt.verify).toHaveBeenCalled();
-        expect(logger.debug).toHaveBeenCalledWith(
-            expect.stringContaining("Permissions at rbac:")
-        );
-        expect(logger.info).toHaveBeenCalledWith(
-            expect.stringContaining("Correct permissions found:")
-        );
-        expect(logger.info).toHaveBeenCalledWith(
-            expect.stringContaining("Proceeding to next stop")
-        );
-        expect(next).toHaveBeenCalled();
+        // Expect next() to be called without error
+        expect(next).toHaveBeenCalledWith();  // Proceed to the next middleware
     });
 
-    test("should succeed if user has wildcard permission", () => {
-        const req = { headers: { authorization: "Bearer validtoken" } };
-        jwt.verify.mockReturnValueOnce({ permissions: ["books:*"] });
-        const middleware = check_scopes("books:read");
+    it('should handle unexpected errors and return INTERNAL_SERVER_ERROR', async () => {
+        req.headers.authorization = 'Bearer validToken';  // Valid token
 
-        middleware(req, res, next);
+        // Mock jwt.verify to throw an unexpected error
+        jwt.verify.mockImplementation(() => {
+            throw new Error('Unexpected Error');
+        });
 
-        expect(jwt.verify).toHaveBeenCalled();
-        expect(logger.debug).toHaveBeenCalledWith(
-            expect.stringContaining("Permissions at rbac:")
+        await check_scopes('books:read')(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(
+            expect.objectContaining({
+                errorCode: 'INTERNAL_SERVER_ERROR',
+                statusCode: 500,
+                message: 'Something went wrong, please try again later',
+            })
         );
-        expect(logger.info).toHaveBeenCalledWith(
-            expect.stringContaining("Correct permissions found:")
-        );
-        expect(logger.info).toHaveBeenCalledWith(
-            expect.stringContaining("Proceeding to next stop")
-        );
-        expect(next).toHaveBeenCalled();
+    });
+
+    it('should handle missing required permissions with wildcard match', async () => {
+        // mock user has wildcard permissions on books
+        jwt.verify.mockImplementationOnce(() => {
+            return {
+                permissions: [
+                    "books:*"
+                ]
+            };
+        });
+        req.headers.authorization = `Bearer mockToken`;
+
+        // check if user has read permission on books
+        await check_scopes('books:read')(req, res, next);
+
+        expect(next).toHaveBeenCalledWith();  // User has 'read:' permission, so next should be called
     });
 });

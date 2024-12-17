@@ -39,7 +39,8 @@ const check_scopes = (requiredPermission) => {
             logger.info(`Proceeding to next stop`);
             next();
         } catch (err) {
-            if (err instanceof jwt.JsonWebTokenError) {
+            console.log(err.name);
+            if (err.name == "JsonWebTokenError") {
                 // Handle JWT-specific errors
                 logger.error(`JWT verification error @ rbac_middleware: ${err.message}`);
                 return next(new AppError('INVALID_TOKEN', 401, 'Invalid token provided'));
