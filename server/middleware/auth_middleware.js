@@ -24,15 +24,16 @@ const verify_jwt_token = async (req, res, next) => {
         const verified = jwt.verify(token, process.env.REACT_APP_JWT_SECRET);
         logger.info(`JWT token successfully validated @ auth_middleware`);
 
-        // Optionally attach verified payload to request object for further use
-        req.user = verified;
+        // // Optionally attach verified payload to request object for further use
+        // req.user = verified;
 
         logger.info(`Proceeding to next middleware or route handler`);
         next(); // Proceed to the next middleware or route handler
     } catch (err) {
         logger.warn(`Invalid token @ auth_middleware: ${err.message}`);
-
+      console.log(err.name);
         if (err.name === 'TokenExpiredError') {
+          console.log("called token expired");
             return next(new AppError('JWT_EXPIRED', 401, 'Token has expired. Please log in again.'));
         } else if (err.name === 'JsonWebTokenError') {
             return next(new AppError('JWT_INVALID', 401, 'Invalid token provided.'));

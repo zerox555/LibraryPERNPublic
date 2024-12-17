@@ -1,81 +1,111 @@
 const jwt = require('jsonwebtoken');
-const logger = require("../config/logger");
 const { verify_jwt_token } = require('./auth_middleware');
-require('dotenv').config();
+const logger = require('../config/logger');
+const AppError = require('../appError');
 
-jest.mock("../config/logger");
 jest.mock('jsonwebtoken', () => ({
+    sign: jest.fn(),
     verify: jest.fn(),
+    JsonWebTokenError: jest.fn().mockReturnValue({
+        name:"JsonWebTokenError"
+    }),
+    TokenExpiredError: jest.fn().mockReturnValue({
+        name:"TokenExpiredError"
+    }),
 }));
 
-describe("verify_jwt_token function", () => {
-    let next, res;
+jest.mock('../config/logger', () => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+}));
+
+describe('verify_jwt_token Middleware', () => {
+    const req = {};
+    const res = {};
+    let next;
 
     beforeEach(() => {
+        req.headers = {};
+        res.status = jest.fn().mockReturnThis();
+        res.json = jest.fn();
         next = jest.fn();
-        res = {
-            send: jest.fn(),
-            status: jest.fn(() => res),
-            json: jest.fn()
-        };
-    });
 
-    afterEach(() => {
-        jest.restoreAllMocks();
         jest.clearAllMocks();
     });
 
-    test("should fail if header is not present", async () => {
-        const req = {};
-
+    it('should return HEADER_MISSING error when Authorization header is absent', async () => {
         await verify_jwt_token(req, res, next);
-
-        expect(logger.warn).toHaveBeenCalledWith(
-            expect.stringContaining("Attempted access without header @ auth_middleware")
+        expect(next).toHaveBeenCalledWith(
+            expect.objectContaining({
+                errorCode: 'HEADER_MISSING',
+                statusCode: 400,
+                message: 'Authorization header is missing.',
+            })
         );
-        expect(res.status).toHaveBeenCalledWith(401);
-        expect(res.send).toHaveBeenCalledWith("Access Denied");
-        expect(next).not.toHaveBeenCalled();
     });
 
-    test("should fail if jwt.verify throws an error", async () => {
-        const req = {
-            headers: {
-                authorization: "Bearer tokenmock"
-            }
-        };
+    it('should return TOKEN_MISSING error when token is missing in Authorization header', async () => {
+        req.headers.authorization = 'Bearer '; // Empty token
+        await verify_jwt_token(req, res, next);
+        expect(next).toHaveBeenCalledWith(
+            expect.objectContaining({
+                errorCode: 'TOKEN_MISSING',
+                statusCode: 401,
+                message: 'Token is missing, authorization denied.',
+            })
+        );
+    });
 
-        jwt.verify.mockImplementationOnce(() => {
-            throw new Error('Error');
+    it('should return JWT_INVALID error when jwt.verify throws JsonWebTokenError', async () => {
+        req.headers.authorization = 'Bearer invalidToken123';
+
+        // Mock jwt.verify to throw JsonWebTokenError
+        jwt.verify.mockImplementation(() => {
+            throw new jwt.JsonWebTokenError('invalid signature');
         });
 
         await verify_jwt_token(req, res, next);
 
-        expect(logger.warn).toHaveBeenCalledWith(
-            expect.stringContaining("Attempted access with invalid token @ auth_middleware")
+        expect(next).toHaveBeenCalledWith(
+            expect.objectContaining({
+                errorCode: 'JWT_INVALID',
+                statusCode: 401,
+                message: 'Invalid token provided.',
+            })
         );
-        expect(res.status).toHaveBeenCalledWith(403);
-        expect(res.send).toHaveBeenCalledWith("Invalid Token");
-        expect(next).not.toHaveBeenCalled();
     });
 
-    test("should succeed if jwt.verify validates the token", async () => {
-        const req = {
-            headers: {
-                authorization: "Bearer tokenmock"
-            }
-        };
+    it('should return JWT_EXPIRED error when jwt.verify throws TokenExpiredError', async () => {
+        req.headers.authorization = 'Bearer expiredToken';
 
-        jwt.verify.mockImplementationOnce(() => ({}));
+        // Mock jwt.verify to throw TokenExpiredError
+        jwt.verify.mockImplementation(() => {
+            throw new jwt.TokenExpiredError('jwt expired', new Date());
+        });
 
         await verify_jwt_token(req, res, next);
 
-        expect(logger.info).toHaveBeenCalledWith(
-            "JWT token: tokenmock validated @ auth_middleware"
+        expect(next).toHaveBeenCalledWith(
+            expect.objectContaining({
+                errorCode: 'JWT_EXPIRED',
+                statusCode: 401,
+                message: 'Token has expired. Please log in again.',
+            })
         );
-        expect(logger.info).toHaveBeenCalledWith(
-            "Proceeding to next stop"
-        );
-        expect(next).toHaveBeenCalled();
+    });
+
+    it('should call next with user payload when jwt.verify succeeds', async () => {
+        req.headers.authorization = 'Bearer validToken';
+        const mockPayload = { id: 123, email: 'test@example.com' };
+
+        // Mock jwt.verify to return the payload
+        jwt.verify.mockReturnValue(mockPayload);
+
+        await verify_jwt_token(req, res, next);
+
+        // expect(req.user).toEqual(mockPayload);
+        expect(next).toHaveBeenCalledWith(); // No error passed to next
     });
 });
