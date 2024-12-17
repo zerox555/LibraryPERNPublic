@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const logger = require("../config/logger")
+const AppError = require("../appError");
 require('dotenv').config();
 
 let rolesData;
@@ -14,7 +15,16 @@ const loadRoles = () => {
             logger.info(`Got Roles data from roles.json: ${JSON.stringify(rolesData, null, 3)} @ role_service`)
         }
     } catch (err) {
-        logger.error(`Error loading roles @ role_service: ${err}`);
+        // Catch and log the error for further processing by the middleware
+        if (err instanceof AppError) {
+            logger.error(`AppError encountered: ${err.message} (Code: ${err.code}, Status: ${err.statusCode})`);
+            throw err; // If it's already an AppError, throw it
+        } else {
+            // If it's an unexpected error, wrap it into AppError and log it
+            logger.error(`Error loading roles @ role_service: ${err}`);
+
+            throw new AppError('ROLE_LOAD_FAILED', 500, 'Something went wrong with loading roles, please try again later');
+        }
     }
 
     return rolesData;
@@ -24,13 +34,13 @@ const setRolesData = (roles) => {
     rolesData = roles
 }
 
-const getPermissionsByRole = (allRoles, mockLoadRoleCallback=null) => {
+const getPermissionsByRole = (allRoles, mockLoadRoleCallback = null) => {
     try {
         let roles;
         // use mock callback
-        if(mockLoadRoleCallback){
+        if (mockLoadRoleCallback) {
             roles = mockLoadRoleCallback()
-        }else{
+        } else {
             roles = loadRoles();
         }
         console.log(roles);
@@ -48,13 +58,21 @@ const getPermissionsByRole = (allRoles, mockLoadRoleCallback=null) => {
                 return role ? role.permissions : [];
             }
         } else {
-            console.log("Debug reached");
             logger.debug("returned []");
             return [];
         }
 
     } catch (err) {
-        logger.error(`Error getting permissions @ role_service: ${err}`);
+        // Catch and log the error for further processing by the middleware
+        if (err instanceof AppError) {
+            logger.error(`AppError encountered: ${err.message} (Code: ${err.code}, Status: ${err.statusCode})`);
+            throw err; // If it's already an AppError, throw it
+        } else {
+            // If it's an unexpected error, wrap it into AppError and log it
+            logger.error(`Error getting permissions @ role_service: ${err}`);
+
+            throw new AppError('ROLE_LOAD_FAILED', 500, 'Something went wrong with loading roles, please try again later');
+        }
     }
 
 };

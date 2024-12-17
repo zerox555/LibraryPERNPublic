@@ -94,9 +94,16 @@ const auth_user = async (userData) => {
             );
             logger.info(`JWT token signed for user: ${userData.name} @ user_service`);
         } catch (err) {
+            // Catch and log the error for further processing by the middleware
+            if (err instanceof AppError) {
+                logger.error(`AppError encountered: ${err.message} (Code: ${err.code}, Status: ${err.statusCode})`);
+                throw err; // If it's already an AppError, throw it
+            } else {
+                // If it's an unexpected error, wrap it into AppError and log it
             // Log the error and throw AppError for JWT signing failure
             logger.error(`Error signing JWT token for user: ${userData.name} @ user_service: ${err.message}`);
             throw new AppError("USER_JWT_ERROR", 500, "Error signing JWT token @ user_service: " + err.message);
+            }
         }
 
         // Return response with token and permissions if everything is successful
