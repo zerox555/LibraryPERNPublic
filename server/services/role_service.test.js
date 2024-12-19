@@ -2,6 +2,7 @@ const fs = require('fs');
 const logger = require("../config/logger")
 // const { setRolesData, getPermissionsByRole, loadRoles } = require("./role_service")
 const { getPermissionsByRole, loadRoles, setRolesData } = require("./role_service");
+const AppError = require('../appError');
 require('dotenv').config();
 
 jest.mock("fs", () => ({
@@ -58,9 +59,9 @@ describe("getPermissionsByRole function", () => {
     test("should return permissions for multiple roles without duplicates", () => {
 
         const allRoles = ["user", "test"];
-        const result = getPermissionsByRole(allRoles,jest.fn().mockReturnValue(dummyAllRoles));
+        const result = getPermissionsByRole(allRoles, jest.fn().mockReturnValue(dummyAllRoles));
 
-        // expect(loadRoles).toHaveBeenCalled();
+
         expect(logger.warn).toHaveBeenCalledWith(
             expect.stringContaining("Multiple roles detected: ")
         );
@@ -68,14 +69,28 @@ describe("getPermissionsByRole function", () => {
     });
 
     test("should handle loadRoles failure gracefully", () => {
-
         const allRoles = ["admin"];
-        const result = getPermissionsByRole(allRoles,jest.fn().mockImplementation(()=>{throw new Error("Error loading roles");}));
+        const mockService = jest.fn().mockImplementation(() => {
+            throw new Error("Error loading roles");
+        });
 
+        let result;
+        let caughtError;
+
+        try {
+            result = getPermissionsByRole(allRoles, mockService);
+        } catch (err) {
+            caughtError = err;
+        }
+
+        // Assertions
+        expect(caughtError).toBeInstanceOf(AppError); // Verify the error is an instance of AppError
+        expect(caughtError.message).toBe("Something went wrong with loading roles, please try again later"); // Validate the error message
         expect(logger.error).toHaveBeenCalledWith(
             expect.stringContaining("Error getting permissions @ role_service")
-        );
-        expect(result).toBeUndefined(); // Error handling doesn't return a value
+        ); // Check if the error was logged
+        // Ensure no value was returned
+        expect(result).toBeUndefined();
     });
 
     test("should return empty array for invalid roles", () => {
@@ -88,13 +103,6 @@ describe("getPermissionsByRole function", () => {
 });
 
 describe("loadRoles function", () => {
-
-
-    beforeEach(() => {
-        // jest.resetAllMocks();
-        // jest.clearAllMocks();
-        // Reset mocks before each test
-    });
 
     afterEach(() => {
         setRolesData(undefined); // Reset rolesData for each test
@@ -127,16 +135,29 @@ describe("loadRoles function", () => {
     })
 
     // load roles fail
-    test("should return error if failed to load roles", () => {
-        //mock retreival
-        // fs.readFileSync.mockReturnValue(new Error("Error reading file"));
-        fs.readFileSync.mockImplementation(() => { throw new Error("Error reading file"); })
+    test("should return an error if failed to load roles", () => {
+        // Mock file reading to simulate an error
+        fs.readFileSync.mockImplementation(() => {
+            throw new Error("Error reading file");
+        });
 
-        const dummyReturnedRoles = loadRoles();
-        expect(dummyReturnedRoles).toEqual();
+        // Call the function and handle the error
+        let dummyReturnedRoles;
+        let caughtError;
 
-        expect(logger.error).toHaveBeenCalledWith("Error loading roles @ role_service: Error: Error reading file");
-    })
+        try {
+            dummyReturnedRoles = loadRoles();
+        } catch (err) {
+            caughtError = err;
+        }
+
+        // Assertions
+        expect(dummyReturnedRoles).toBeUndefined(); // The function should not return a value
+        expect(caughtError).toBeInstanceOf(AppError); // Check if the caught error is an instance of AppError
+        expect(logger.error).toHaveBeenCalledWith(
+            "Error loading roles @ role_service: Error: Error reading file"
+        ); // Verify logger error
+    });
 
 
 })
