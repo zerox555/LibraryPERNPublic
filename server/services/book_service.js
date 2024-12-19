@@ -92,7 +92,7 @@ const delete_book_post = async (book_id) => {
         const controllerResponse =
         {
             success: true,
-            data: deleteStatus
+            data: bookSelected
         }
         return controllerResponse;
     }
