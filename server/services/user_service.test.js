@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const { getPermissionsByRole } = require("./role_service");
 const logger = require("../config/logger");
 const { create_user_post, auth_user } = require('./user_service');
+const AppError = require('../appError');
 require('dotenv').config();
 
 
@@ -52,8 +53,49 @@ describe("create_user_post function", () => {
         expect(response).toEqual({
             newUser: dummyUser,
             success: true,
-            errorMsg: ""
         })
+    });
+
+    test("should return error if userData username is empty", async () => {
+        const dummyUserData = {
+            name: "",
+            password: "pw"
+        }
+
+        try {
+            result = await create_user_post(dummyUserData);
+        } catch (err) {
+            caughtError = err;
+        }
+
+        // Assertions
+        expect(caughtError).toBeInstanceOf(AppError); // Verify the error is an instance of AppError
+        expect(caughtError.errorCode).toBe("USER_CREATION_FAILED");
+        expect(caughtError.statusCode).toBe(400);
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining("AppError encountered:")
+        );
+    });
+
+    test("should return error if userData password is empty", async () => {
+        const dummyUserData = {
+            name: "jingen",
+            password: ""
+        }
+
+        try {
+            result = await create_user_post(dummyUserData);
+        } catch (err) {
+            caughtError = err;
+        }
+
+        // Assertions
+        expect(caughtError).toBeInstanceOf(AppError); // Verify the error is an instance of AppError
+        expect(caughtError.errorCode).toBe("USER_CREATION_FAILED");
+        expect(caughtError.statusCode).toBe(400);
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining("AppError encountered:")
+        );
     });
 
     test("should return error when password hashing fails", async () => {
@@ -64,16 +106,23 @@ describe("create_user_post function", () => {
         // mock hash fn to throw error
         argon2.hash.mockRejectedValue(new Error("Hashing failed"))
 
-        // run create_user_post
-        const response = await create_user_post(dummyUserData)
+        let result;
+        let caughtError;
 
-        // check for logger.warn
-        expect(logger.warn).toHaveBeenCalled()
-        // check for response 
-        expect(response).toEqual({
-            success: false,
-            errorMsg: "Error creating user"
-        })
+        try {
+            result = await create_user_post(dummyUserData);
+        } catch (err) {
+            caughtError = err;
+        }
+
+        // Assertions
+        expect(caughtError).toBeInstanceOf(AppError); // Verify the error is an instance of AppError
+        expect(caughtError.errorCode).toBe("USER_CREATION_FAILED");
+        expect(caughtError.statusCode).toBe(500);
+        expect(logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining("Error creating user @ user_service: ")
+        );
+
     });
 
     test("should return error when user creation fails", async () => {
@@ -93,18 +142,22 @@ describe("create_user_post function", () => {
         // mock db user creation to throw error
         User.create.mockRejectedValue(new Error("error creating user in db"));
 
-        // run create_user_post
-        const response = await create_user_post(dummyUserData)
+        let result;
+        let caughtError;
 
-        expect(argon2.hash).toHaveBeenCalledWith("password")
-        expect(User.create).toHaveBeenCalledWith(dummyUser)
-        // check for logger.warn
-        expect(logger.warn).toHaveBeenCalled()
-        // check for response 
-        expect(response).toEqual({
-            success: false,
-            errorMsg: "Error creating user"
-        })
+        try {
+            result = await create_user_post(dummyUserData);
+        } catch (err) {
+            caughtError = err;
+        }
+
+        // Assertions
+        expect(caughtError).toBeInstanceOf(AppError); // Verify the error is an instance of AppError
+        expect(caughtError.errorCode).toBe("USER_CREATION_FAILED");
+        expect(caughtError.statusCode).toBe(500);
+        expect(logger.warn).toHaveBeenCalledWith(
+            expect.stringContaining("Error creating user @ user_service: ")
+        );
 
     });
 });
@@ -160,8 +213,8 @@ describe("auth_user function", () => {
         expect(jwt.sign).toHaveReturnedWith("randomtokenstring here");
         expect(logger.info).toHaveBeenCalledTimes(3);
         expect(logger.info.mock.calls[0][0]).toBe(`User: jingen found in database @ user_service`);
-        expect(logger.info.mock.calls[1][0]).toBe(`JWT token signed: randomtokenstring here @ user_service`);
-        expect(logger.info.mock.calls[2][0]).toBe(`User logged in: ${JSON.stringify(dummyUserInfo, null, 3)} @ user_service`);
+        expect(logger.info.mock.calls[1][0]).toBe(`JWT token signed for user: jingen @ user_service`);
+        expect(logger.info.mock.calls[2][0]).toBe("User logged in successfully: jingen @ user_service");
         // expect(logger.warn).toHaveBeenCalledWith("User logged in:");
         expect(response).toEqual({
             success: true,
@@ -171,7 +224,6 @@ describe("auth_user function", () => {
                 roles: ["user"],
                 permissions: ["books:read", "books:delete"],
                 token: "randomtokenstring here",
-                errorMsg: ""
             }
         })
 
@@ -187,20 +239,22 @@ describe("auth_user function", () => {
         // Mock the database call to simulate user not being found
         User.findOne.mockResolvedValue(null);
 
-        // Call the auth_user function
-        const response = await auth_user(dummyUserData);
+        let result;
+        let caughtError;
+
+        try {
+            result = await auth_user(dummyUserData);
+        } catch (err) {
+            caughtError = err;
+        }
+
+        // Assertions
+        expect(caughtError).toBeInstanceOf(AppError); // Verify the error is an instance of AppError
+        expect(caughtError.errorCode).toBe("USER_AUTH_FAILED");
+        expect(caughtError.statusCode).toBe(404);
 
         // Assert the logger was called for "user not found"
         expect(logger.warn).toHaveBeenCalledWith("User with name: jingen not found in database @ user_service");
-        expect(logger.warn).toHaveBeenCalledWith("User not logged in @ user_service");
-
-        // Assert the response contains the error message
-        expect(response).toEqual({
-            success: false,
-            data: {
-                errorMsg: errorMsg
-            }
-        });
     });
 
     test("should return error if JWT token creation fails", async () => {
@@ -224,20 +278,24 @@ describe("auth_user function", () => {
         // Simulate JWT sign failure
         jwt.sign.mockImplementation(() => { throw new Error("JWT error"); });
 
-        // Call the auth_user function
-        const response = await auth_user(dummyUserData);
+        let result;
+        let caughtError;
+
+        try {
+            result = await auth_user(dummyUserData);
+        } catch (err) {
+            caughtError = err;
+        }
+
+        // Assertions
+        expect(caughtError).toBeInstanceOf(AppError); // Verify the error is an instance of AppError
+        expect(caughtError.errorCode).toBe("USER_JWT_ERROR");
+        expect(caughtError.statusCode).toBe(500);
 
         // Assert the logger was called for the JWT creation error
-        expect(logger.warn).toHaveBeenCalledWith("Error Occured @ user_service: Error: JWT error");
-
-        // Assert the response contains the error message
-        expect(response).toEqual({
-            success: false,
-            data: {
-                errorMsg: errorMsg
-            }
-        });
+        expect(logger.error.mock.calls[0][0]).toBe("Error signing JWT token for user: jingen @ user_service: JWT error");
     });
+
     test("should return error if user roles cannot be read", async () => {
         const dummyUserData = {
             name: "jingen",
@@ -255,24 +313,30 @@ describe("auth_user function", () => {
         // Mock password verification
         argon2.verify.mockResolvedValue(true);
         // Simulate failure in reading user roles
-        getPermissionsByRole.mockResolvedValue([]); // Empty array means roles can't be read
+        getPermissionsByRole.mockReturnValue([]); // Empty array means roles can't be read
 
         jwt.sign.mockImplementationOnce(() => "randomtokenstring here");
 
-        // Call the auth_user function
-        const response = await auth_user(dummyUserData);
+        let result;
+        let caughtError;
+
+        try {
+            result = await auth_user(dummyUserData);
+        } catch (err) {
+            caughtError = err;
+        }
+
+        // Assertions
+        expect(caughtError).toBeInstanceOf(AppError); // Verify the error is an instance of AppError
+        expect(caughtError.errorCode).toBe("USER_AUTH_FAILED");
+        expect(caughtError.statusCode).toBe(403);
 
         expect(getPermissionsByRole).toHaveBeenCalled();
+        expect(getPermissionsByRole).toHaveReturnedWith([]);
 
         // Assert the logger was called for the "invalid token and permissions" warning
         expect(logger.warn).toHaveBeenCalledWith("Error occured @ user_service: Invalid token and permissions");
 
-        // Assert the response contains the error message
-        expect(response).toEqual({
-            success: false,
-            data: {
-                errorMsg: errorMsg
-            }
-        });
+
     });
 });

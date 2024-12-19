@@ -10,25 +10,27 @@ require('dotenv').config();
 // ADD NEW USER TO DB
 const create_user_post = async (userData) => {
     try {
-        // Validite user credentials
+        // Validate user credentials
         if (!(userData.name && userData.password)) {
             throw new AppError('USER_CREATION_FAILED', 400, 'Username and password cannot be empty!');
         }
+
         const hash = await argon2.hash(userData.password);
+
         const newUser = await User.create({
             name: userData.name,
             password: hash,
             roles: ["user"]
-        }
-        );
+        });
+
         const userCreationResponse = {
             newUser,
             success: true,
-        }
+        }; // Removed `await` here as it's not needed
         logger.info(`Created user : ${JSON.stringify(newUser, null, 2)} @ user_service`);
+
         return userCreationResponse;
-    }
-    catch (err) {
+    } catch (err) {
         // Catch and log the error for further processing by the middleware
         if (err instanceof AppError) {
             logger.error(`AppError encountered: ${err.message} (Code: ${err.code}, Status: ${err.statusCode})`);
@@ -36,12 +38,10 @@ const create_user_post = async (userData) => {
         } else {
             // If it's an unexpected error, wrap it into AppError and log it
             logger.warn("Error creating user @ user_service: " + err.message);
-            // If is db problem
+            // If it's a DB problem
             throw new AppError('USER_CREATION_FAILED', 500, 'Cannot create user at this time, please try again later');
         }
     }
-
-
 };
 
 // AUTHENTICATE USER
@@ -76,6 +76,8 @@ const auth_user = async (userData) => {
         // Set JWT token
         try {
             permissions = getPermissionsByRole(user.roles);
+            // console.log(permissions.length);
+            // console.log(permissions.length);
             if (permissions.length === 0) {
                 // Log the error and throw AppError if no permissions are found
                 logger.warn(`Error occured @ user_service: Invalid token and permissions`);
@@ -100,9 +102,9 @@ const auth_user = async (userData) => {
                 throw err; // If it's already an AppError, throw it
             } else {
                 // If it's an unexpected error, wrap it into AppError and log it
-            // Log the error and throw AppError for JWT signing failure
-            logger.error(`Error signing JWT token for user: ${userData.name} @ user_service: ${err.message}`);
-            throw new AppError("USER_JWT_ERROR", 500, "Error signing JWT token @ user_service: " + err.message);
+                // Log the error and throw AppError for JWT signing failure
+                logger.error(`Error signing JWT token for user: ${userData.name} @ user_service: ${err.message}`);
+                throw new AppError("USER_JWT_ERROR", 500, "Error signing JWT token @ user_service: " + err.message);
             }
         }
 
