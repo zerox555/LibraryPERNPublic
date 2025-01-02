@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Login from './components/Login';
 import Register from './components/Register';
+import BookInfo from "./components/BookInfo";
 import { useState } from 'react';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path='/login' element={<Login setLoggedIn={setLoggedIn} setToken={setToken}/>} />
           <Route path='/register' element={<Register />} />
           <Route path='/home' element={<Home />} />
+          <Route path="/book-info/:bookName" element={<BookInfo />} />
         </Routes>
       </Router>
     </div>
