@@ -19,6 +19,7 @@ const {create_user_post_controller,auth_user_controller} = require('./controller
 // Middleware 
 const {verify_jwt_token} = require("./middleware/auth_middleware")
 const {check_scopes} = require("./middleware/rbac_middleware")
+const {handle_errors} = require("./middleware/errorHandler_middleware")
 
 
 // FOR BOOKS
@@ -36,10 +37,13 @@ app.use('/api/authuser/',auth_user_controller);
 // app.use('/api/verifytoken/',check_jwt_token);
 // app.use('/protected',verify_jwt_token,check_jwt_token);
 
+app.use(handle_errors);
+
 
 app.use('*', (req,res) =>{
     res.sendFile(path.join(__dirname,"../build/index.html"));
 });
+
 
 //LISTEN    
 app.listen(8080, () =>{

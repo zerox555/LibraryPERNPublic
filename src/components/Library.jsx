@@ -22,7 +22,7 @@ export default function Library({ token }) {
                 },
             });
             const json = await response.json()
-            setBooks(json)
+            setBooks(json.data)
             setLoading(1)
         }
         fetchData()
@@ -98,7 +98,7 @@ function SubmitBookDiv({ setBooks, token }) {
                             alert("Book created successfully!");
                         } else {
                             const errorResponse = await response.json();
-                            alert(errorResponse.message);
+                            alert(errorResponse.error.message);
                         }
                     } catch (error) {
                         alert("Error creating book");
@@ -131,8 +131,37 @@ function BookTable({ setBooks, books, token }) {
         borderCollapse: "collapse",
     };
 
+    const urlEditBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/editbook/" : "http://localhost:8080/api/editbook/"
+    const urlDeleteBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/deletebook/" : "http://localhost:8080/api/deletebook/"
+    // Save the edited book
     const handleSave = async () => {
-        // Save logic here
+        try {
+            const updatedBook = { ...editableBook };
+            const response = await fetch(urlEditBook, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updatedBook),
+            });
+
+            if (response.ok) {
+                setBooks((prevBooks) =>
+                    prevBooks.map((book) =>
+                        book.book_id === updatedBook.book_id ? updatedBook : book
+                    )
+                );
+                alert("Book updated successfully!");
+            } else {
+                const errorResponse = await response.json();
+                alert(errorResponse.error.message);
+            }
+        } catch (error) {
+            alert("Error updating book");
+        } finally {
+            setEditableBookId(null); // Reset the editable state after saving
+        }
     };
 
     const handleInputChange = (e, field) => {
@@ -226,7 +255,28 @@ function BookTable({ setBooks, books, token }) {
                                 <button
                                     type="button"
                                     onClick={async () => {
-                                        // Delete logic here
+                                        try {
+                                            const response = await fetch(`${urlDeleteBook}`, {
+                                                method: "POST",
+                                                headers: {
+                                                    "Authorization": `Bearer ${token}`,
+                                                    "Content-Type": "application/json",
+                                                },
+                                                body: JSON.stringify({ book_id: book.book_id }),
+                                            });
+
+                                            if (response.ok) {
+                                                setBooks((prevBooks) =>
+                                                    prevBooks.filter((b) => b.book_id !== book.book_id)
+                                                );
+                                                alert("Book deleted successfully!");
+                                            } else {
+                                                const errorResponse = await response.json();
+                                                alert(errorResponse.error.message);
+                                            }
+                                        } catch (error) {
+                                            alert("Error deleting book");
+                                        }
                                     }}
                                     className="action-button delete-btn"
                                 >
