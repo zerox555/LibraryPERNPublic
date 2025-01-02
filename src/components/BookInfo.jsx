@@ -25,20 +25,59 @@ export default function BookInfo() {
         fetchBookInfo();
     }, [bookName]);
 
+    // return (
+    //     <div>
+    //         <h1>Book Information</h1>
+    //         {errorMessage ? (
+    //             <p style={{ color: "red" }}>{errorMessage}</p>
+    //         ) : bookData ? (
+    //             <div>
+    //                 <p><strong>Title:</strong> {bookData.title}</p>
+    //                 <p><strong>Author:</strong> {bookData.author_name?.join(", ")}</p>
+    //                 <p><strong>First Published:</strong> {bookData.first_publish_year}</p>
+    //             </div>
+    //         ) : (
+    //             <p>Loading book information...</p>
+    //         )}
+    //     </div>
+    // );
     return (
-        <div>
-            <h1>Book Information</h1>
-            {errorMessage ? (
-                <p style={{ color: "red" }}>{errorMessage}</p>
-            ) : bookData ? (
-                <div>
-                    <p><strong>Title:</strong> {bookData.title}</p>
-                    <p><strong>Author:</strong> {bookData.author_name?.join(", ")}</p>
-                    <p><strong>First Published:</strong> {bookData.first_publish_year}</p>
-                </div>
+        <div style={{ textAlign: "center", margin: "20px" }}>
+            <h2>Book Information</h2>
+            {bookData ? (
+                <table style={{ margin: "0 auto", borderCollapse: "collapse", border: "1px solid #ccc" }}>
+                    <tbody>
+                        <tr>
+                            <td style={tableCellStyle}><b>Title</b></td>
+                            <td style={tableCellStyle}>{bookData.title}</td>
+                        </tr>
+                        <tr>
+                            <td style={tableCellStyle}><b>Author(s)</b></td>
+                            <td style={tableCellStyle}>{bookData.author_name?.join(", ") || "N/A"}</td>
+                        </tr>
+                        <tr>
+                            <td style={tableCellStyle}><b>First Published Year</b></td>
+                            <td style={tableCellStyle}>{bookData.first_publish_year || "N/A"}</td>
+                        </tr>
+                        <tr>
+                            <td style={tableCellStyle}><b>Languages</b></td>
+                            <td style={tableCellStyle}>{bookData.language?.join(", ") || "N/A"}</td>
+                        </tr>
+                        <tr>
+                            <td style={tableCellStyle}><b>E Book available on openlibrary?</b></td>
+                            <td style={tableCellStyle}>{bookData.ebook_access ? bookData.ebook_access : "N/A"}</td>
+                        </tr>
+                    </tbody>
+                </table>
             ) : (
-                <p>Loading book information...</p>
+                <p>Loading data....</p>
             )}
         </div>
     );
 }
+
+const tableCellStyle = {
+    border: "1px solid #ccc",
+    padding: "8px 12px",
+    textAlign: "left",
+};

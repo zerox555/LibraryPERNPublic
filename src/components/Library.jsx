@@ -184,7 +184,8 @@ function BookTable({ setBooks, books, token }) {
                         <th style={mystyle}>Book</th>
                         <th style={mystyle}>Author</th>
                         <th style={mystyle}>Year Published</th>
-                        <th style={mystyle} colSpan={4}></th>
+                        {/* Conditionally render the 'Save' column */}
+                        {editableBookId ?(<th style={mystyle} colSpan={4}></th>):(<th style={mystyle} colSpan={3}></th>)}
                     </tr>
                     {paginatedBooks.map((book, index) => (
                         <tr key={index}>
@@ -227,30 +228,47 @@ function BookTable({ setBooks, books, token }) {
                                     onClick={async () => {
                                         // Delete logic here
                                     }}
+                                    className="action-button delete-btn"
                                 >
                                     Delete
                                 </button>
                             </td>
                             <td style={mystyle}>
                                 {editableBookId === book.book_id ? (
-                                    <button type="button" onClick={handleCancel}>
+                                    <button
+                                        type="button"
+                                        onClick={handleCancel}
+                                        className="action-button"
+                                    >
                                         Back
                                     </button>
                                 ) : (
-                                    <button type="button" onClick={() => handleEdit(book)}>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleEdit(book)}
+                                        className="action-button edit-btn"
+                                    >
                                         Edit
                                     </button>
                                 )}
                             </td>
-                            <td style={mystyle}>
-                                <button type="button" onClick={handleSave}>
-                                    Save
-                                </button>
-                            </td>
+                            {/* Conditionally render 'Save' button and its column */}
+                            {editableBookId === book.book_id && (
+                                <td style={mystyle}>
+                                    <button
+                                        type="button"
+                                        onClick={handleSave}
+                                        className="action-button save-btn"
+                                    >
+                                        Save
+                                    </button>
+                                </td>
+                            )}
                             <td style={mystyle}>
                                 <button
                                     type="button"
                                     onClick={() => navigate(`/book-info/${book.name}`)}
+                                    className="action-button more-info-btn"
                                 >
                                     More Info
                                 </button>
@@ -279,3 +297,4 @@ function BookTable({ setBooks, books, token }) {
         </form>
     );
 }
+
