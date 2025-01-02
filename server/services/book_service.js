@@ -18,7 +18,7 @@ const all_book_get = async () => {
             data: foundBooks
         }
         return controllerResponse;
-    }catch (err) {
+    } catch (err) {
         // Handle error based on type
         if (err instanceof AppError) {
             // If it’s already an AppError, just throw it
@@ -113,10 +113,17 @@ const delete_book_post = async (book_id) => {
 // MODIFY A BOOK
 const edit_book_post = async ({ name, author, year_published, book_id }) => {
     try {
+        logger.info(`year published at service is ${year_published}`)
 
         // validate client input
         if (!(name && author && year_published)) {
             throw new AppError('BOOK_EDIT_FAILED', 400, 'Book details cannot be empty');
+        }
+
+        if (year_published < 0 || year_published > 3000) {
+            // Validate year_published
+            logger.warn(`Invalid year_published: ${year_published}`);
+            throw new AppError('BOOK_EDIT_FAILED', 400, 'Year cannot be less than 0 or greater than 3000');
         }
         const oldBook = { name, author, year_published };
         //get book by book id

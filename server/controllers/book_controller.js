@@ -57,6 +57,7 @@ const edit_book_post_controller = async (req, res,next) => {
     try {
         const { name, author, year_published, book_id } = req.body;
         // might return error if edit failed
+        logger.info(`year published at controller is ${year_published}`)
         const editStatus = await edit_book_post({ name, author, year_published, book_id })
         logger.info(`Edit book transaction done @ book_controller`);
         res.status(200).json(editStatus)
