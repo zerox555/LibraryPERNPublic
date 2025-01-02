@@ -20,6 +20,7 @@ describe("User Controller Tests", () => {
             send: jest.fn(),
             json: jest.fn(),
         };
+        mockNext = jest.fn();
         jest.clearAllMocks();
     });
 
@@ -65,7 +66,6 @@ describe("User Controller Tests", () => {
 
             mockReq.body = { name: "testUser", password: "password123" };
 
-            const mockNext =jest.fn();
             await create_user_post_controller(mockReq, mockRes,mockNext);
 
             expect(create_user_post).toHaveBeenCalledWith({
@@ -121,7 +121,7 @@ describe("User Controller Tests", () => {
             
 
             mockReq.body = { name: "testUser", password: "password123" };
-            await auth_user_controller(mockReq, mockRes);
+            await auth_user_controller(mockReq, mockRes,mockNext);
 
             expect(auth_user).toHaveBeenCalledWith({
                 name: "testUser",

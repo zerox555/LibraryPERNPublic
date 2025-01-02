@@ -21,8 +21,8 @@ const create_user_post_controller = async (req, res, next) => {
     } catch (err) {
         // res.status(500).send("Server error");
         logger.info("New User creation failed");
-        logger.error(err)
-        next(err)
+        logger.error(err);
+        next(err);
     }
 }
 
