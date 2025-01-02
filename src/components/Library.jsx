@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 
 export default function Library({ token }) {
@@ -123,6 +124,7 @@ function BookTable({ setBooks, books, token }) {
     const [filterText, setFilterText] = useState("");
     const [currentPage, setCurrentPage] = useState(1); // Current page state
     const entriesPerPage = 50; // Number of entries per page
+    const navigate = useNavigate(); // Initialize useNavigate
 
     const mystyle = {
         border: "1px solid black",
@@ -174,7 +176,7 @@ function BookTable({ setBooks, books, token }) {
             <table style={mystyle}>
                 <tbody>
                     <tr>
-                        <td colSpan={6} style={{ padding: "10px" }}>
+                        <td colSpan={7} style={{ padding: "10px" }}>
                             <BookSearchBar setFilterText={setFilterText}></BookSearchBar>
                         </td>
                     </tr>
@@ -182,7 +184,7 @@ function BookTable({ setBooks, books, token }) {
                         <th style={mystyle}>Book</th>
                         <th style={mystyle}>Author</th>
                         <th style={mystyle}>Year Published</th>
-                        <th style={mystyle} colSpan={3}></th>
+                        <th style={mystyle} colSpan={4}></th>
                     </tr>
                     {paginatedBooks.map((book, index) => (
                         <tr key={index}>
@@ -243,6 +245,14 @@ function BookTable({ setBooks, books, token }) {
                             <td style={mystyle}>
                                 <button type="button" onClick={handleSave}>
                                     Save
+                                </button>
+                            </td>
+                            <td style={mystyle}>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate(`/book-info/${book.name}`)}
+                                >
+                                    More Info
                                 </button>
                             </td>
                         </tr>
