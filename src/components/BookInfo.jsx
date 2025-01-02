@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 export default function BookInfo() {
     const { bookName } = useParams(); // Get book name from URL params
     const [bookData, setBookData] = useState(null);
-    const [errorMessage, setErrorMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("Loading...");
 
     useEffect(() => {
         const fetchBookInfo = async () => {
@@ -25,22 +25,6 @@ export default function BookInfo() {
         fetchBookInfo();
     }, [bookName]);
 
-    // return (
-    //     <div>
-    //         <h1>Book Information</h1>
-    //         {errorMessage ? (
-    //             <p style={{ color: "red" }}>{errorMessage}</p>
-    //         ) : bookData ? (
-    //             <div>
-    //                 <p><strong>Title:</strong> {bookData.title}</p>
-    //                 <p><strong>Author:</strong> {bookData.author_name?.join(", ")}</p>
-    //                 <p><strong>First Published:</strong> {bookData.first_publish_year}</p>
-    //             </div>
-    //         ) : (
-    //             <p>Loading book information...</p>
-    //         )}
-    //     </div>
-    // );
     return (
         <div style={{ textAlign: "center", margin: "20px" }}>
             <h2>Book Information</h2>
@@ -70,7 +54,7 @@ export default function BookInfo() {
                     </tbody>
                 </table>
             ) : (
-                <p>Loading data....</p>
+                <p>{errorMessage}</p>
             )}
         </div>
     );
