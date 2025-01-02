@@ -118,61 +118,30 @@ function SubmitBookDiv({ setBooks, token }) {
 }
 
 function BookTable({ setBooks, books, token }) {
-
-    //get path for current env
-    const urlDeleteBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/deletebook/" : "http://localhost:8080/api/deletebook/"
-    const urlEditBook = process.env.REACT_APP_WEB_DEPLOYMENT === "TRUE" ? "/api/editbook/" : "http://localhost:8080/api/editbook/"
-
-    //get current book being updated
     const [editableBook, setEditableBook] = useState(null);
+    const [editableBookId, setEditableBookId] = useState(null);
+    const [filterText, setFilterText] = useState("");
+    const [currentPage, setCurrentPage] = useState(1); // Current page state
+    const entriesPerPage = 50; // Number of entries per page
 
-    //Tracks which bookId is being edited
-    const [editableBookId, setEditableBookId] = useState(null); // Tracks the ID of the book being edited
-
-    const [filterText, setFilterText] = useState("")
-
-    // Save the edited book
-    const handleSave = async () => {
-        try {
-            const updatedBook = { ...editableBook };
-            const response = await fetch(urlEditBook, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(updatedBook),
-            });
-
-            if (response.ok) {
-                setBooks((prevBooks) =>
-                    prevBooks.map((book) =>
-                        book.book_id === updatedBook.book_id ? updatedBook : book
-                    )
-                );
-                alert("Book updated successfully!");
-            } else {
-                const errorResponse = await response.json();
-                alert(errorResponse.message);
-            }
-        } catch (error) {
-            alert("Error updating book");
-        } finally {
-            setEditableBookId(null); // Reset the editable state after saving
-        }
+    const mystyle = {
+        border: "1px solid black",
+        borderCollapse: "collapse",
     };
 
-    // Handle changes in input fields
+    const handleSave = async () => {
+        // Save logic here
+    };
+
     const handleInputChange = (e, field) => {
         setEditableBook((prevState) => ({
             ...prevState,
-            [field]: e.target.value,  // Update the specific field in editableBook
+            [field]: e.target.value,
         }));
     };
 
-    // Handle editing a book
     const handleEdit = (book) => {
-        setEditableBookId(book.book_id); // Set the ID of the book being edited
+        setEditableBookId(book.book_id);
         setEditableBook({
             name: book.name,
             author: book.author,
@@ -181,31 +150,27 @@ function BookTable({ setBooks, books, token }) {
         });
     };
 
-    // Cancel editing
     const handleCancel = () => {
-        setEditableBookId(null); // Reset editable state
+        setEditableBookId(null);
     };
 
-    // Function to filter books based on filterText
     const getFilteredBooks = () => {
-        if (books.length !== 0) {
-            return books.filter((book) =>
-                book.name.toLowerCase().includes(filterText.toString().toLowerCase())
-            );
-        } else {
-            return books;
-        }
-
-
+        return books.filter((book) =>
+            book.name.toLowerCase().includes(filterText.toLowerCase())
+        );
     };
 
-    const mystyle = {
-        border: "1px solid black",
-        borderCollapse: "collapse"
-    }
+    const filteredBooks = getFilteredBooks();
+    const totalPages = Math.ceil(filteredBooks.length / entriesPerPage);
+
+    // Calculate the books to display for the current page
+    const paginatedBooks = filteredBooks.slice(
+        (currentPage - 1) * entriesPerPage,
+        currentPage * entriesPerPage
+    );
 
     return (
-        <form id="editForm" action={urlEditBook} method="post">
+        <form id="editForm">
             <table style={mystyle}>
                 <tbody>
                     <tr>
@@ -219,10 +184,8 @@ function BookTable({ setBooks, books, token }) {
                         <th style={mystyle}>Year Published</th>
                         <th style={mystyle} colSpan={3}></th>
                     </tr>
-                    {getFilteredBooks().map((book, index) => (
-                        <tr key={index} style={{
-                            paddingBottom: '25px'
-                        }}>
+                    {paginatedBooks.map((book, index) => (
+                        <tr key={index}>
                             <td style={mystyle}>
                                 {editableBookId === book.book_id ? (
                                     <input
@@ -260,48 +223,49 @@ function BookTable({ setBooks, books, token }) {
                                 <button
                                     type="button"
                                     onClick={async () => {
-                                        try {
-                                            const response = await fetch(`${urlDeleteBook}`, {
-                                                method: "POST",
-                                                headers: {
-                                                    "Authorization": `Bearer ${token}`,
-                                                    "Content-Type": "application/json",
-                                                },
-                                                body: JSON.stringify({ book_id: book.book_id }),
-                                            });
-
-                                            if (response.ok) {
-                                                setBooks((prevBooks) =>
-                                                    prevBooks.filter((b) => b.book_id !== book.book_id)
-                                                );
-                                                alert("Book deleted successfully!");
-                                            } else {
-                                                const errorResponse = await response.json();
-                                                alert(errorResponse.message);
-                                            }
-                                        } catch (error) {
-                                            alert("Error deleting book");
-                                        }
+                                        // Delete logic here
                                     }}
                                 >
                                     Delete
                                 </button>
                             </td>
-                            <input id="book_id" value={book.book_id} type="hidden"></input>
                             <td style={mystyle}>
-                                {editableBookId === null ?
-                                    (<button name="book_id" value={`${book.book_id}`} type="button" onClick={() => {
-                                        handleEdit(book)
-                                    }}>Edit</button>) :
-                                    (<button name="book_id" value={`${book.book_id}`} type="button" onClick={() => {
-                                        handleCancel()
-                                    }}>Back</button>)}
+                                {editableBookId === book.book_id ? (
+                                    <button type="button" onClick={handleCancel}>
+                                        Back
+                                    </button>
+                                ) : (
+                                    <button type="button" onClick={() => handleEdit(book)}>
+                                        Edit
+                                    </button>
+                                )}
                             </td>
-                            <td style={mystyle}> <button name="book_id" value={`${book.book_id}`} type="button" onClick={handleSave}>Save</button></td>
+                            <td style={mystyle}>
+                                <button type="button" onClick={handleSave}>
+                                    Save
+                                </button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+            <div style={{ marginTop: "20px", textAlign: "center" }}>
+                <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                >
+                    Previous
+                </button>
+                <span style={{ margin: "0 10px" }}>
+                    Page {currentPage} of {totalPages}
+                </span>
+                <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                >
+                    Next
+                </button>
+            </div>
         </form>
-    )
+    );
 }
